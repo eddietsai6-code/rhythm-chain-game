@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   LEVEL_COUNT,
+  SNARE_TONE,
   RHYTHM_PATTERNS,
   buildLevels,
   calculateChainBeats,
@@ -117,4 +118,16 @@ test("evaluatePlayerChain requires the player's chain to match the target exactl
       { index: 3, expected: "triplet", actual: null },
     ],
   });
+});
+
+test("scheduled audio events use snare tone only", () => {
+  const chain = RHYTHM_PATTERNS.map((pattern) => pattern.id);
+  const events = scheduleChainEvents(chain, { bpm: 108 });
+  const unexpectedTones = events
+    .filter((event) => event.audible)
+    .map((event) => event.tone)
+    .filter((tone) => tone !== SNARE_TONE);
+
+  assert.deepEqual(unexpectedTones, []);
+  assert.ok(events.some((event) => event.tone === SNARE_TONE));
 });

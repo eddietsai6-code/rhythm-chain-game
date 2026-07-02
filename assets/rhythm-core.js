@@ -1,4 +1,8 @@
 export const LEVEL_COUNT = 30;
+export const SNARE_TONE = "snare";
+export const DRUM_KIT_TONES = deepFreeze([
+  SNARE_TONE,
+]);
 const MIN_COMBO_COUNT = 4;
 const MAX_COMBO_COUNT = 16;
 const DEFAULT_BPM = 88;
@@ -334,7 +338,7 @@ export function scheduleChainEvents(chain, options = {}) {
         timeSeconds: startTime + beat * beatDuration,
         durationSeconds: Math.min(0.055, beatDuration * 0.12),
         velocity: beatOffset === 0 ? 0.42 : 0.34,
-        tone: beatOffset === 0 ? "pulse" : "subPulse",
+        tone: SNARE_TONE,
       });
     }
 
@@ -349,7 +353,7 @@ export function scheduleChainEvents(chain, options = {}) {
         timeSeconds: startTime + beat * beatDuration,
         durationSeconds: Math.max(0.035, patternHit.duration * beatDuration),
         velocity: patternHit.velocity,
-        tone: patternHit.tone,
+        tone: normalizeDrumTone(patternHit.tone, pattern, patternHit.at),
       });
     });
 
@@ -403,6 +407,10 @@ export function evaluatePlayerChain(targetChain, playerChain) {
     accuracy: total === 0 ? 1 : Number((matched / total).toFixed(3)),
     mismatches,
   };
+}
+
+function normalizeDrumTone(tone, pattern, at) {
+  return SNARE_TONE;
 }
 
 export function getComboCountForLevel(levelNumber) {

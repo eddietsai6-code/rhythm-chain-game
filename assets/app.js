@@ -22,6 +22,7 @@ const selectors = {
   targetBeatCount: document.querySelector("#targetBeatCount"),
   playerBeatCount: document.querySelector("#playerBeatCount"),
   statusText: document.querySelector("#statusText"),
+  drillLabel: document.querySelector("#drillLabel"),
   libraryCount: document.querySelector("#libraryCount"),
   patternLibrary: document.querySelector("#patternLibrary"),
   playTargetButton: document.querySelector("#playTargetButton"),
@@ -75,7 +76,7 @@ function loadLevel(levelNumber) {
   progress.currentLevel = state.level;
   saveProgress();
   render();
-  setStatus(`Level ${state.level} ready`, "idle");
+  setStatus("Ready", "idle");
 }
 
 function render() {
@@ -94,7 +95,7 @@ function renderLevelList() {
       button.className = "level-button";
       button.type = "button";
       button.textContent = String(level);
-      button.setAttribute("aria-label", `第 ${level} 关`);
+      button.setAttribute("aria-label", `Drill ${level}`);
       if (level === state.level) button.classList.add("active");
       if (progress.passedLevels.includes(level)) button.classList.add("passed");
       button.addEventListener("click", () => loadLevel(level));
@@ -109,12 +110,13 @@ function renderReadouts() {
   const accuracy = state.lastResult ? `${Math.round(state.lastResult.accuracy * 100)}%` : "0%";
 
   selectors.levelTitle.textContent = `Level ${state.level} / ${LEVEL_COUNT}`;
-  selectors.levelMeta.textContent = `${state.config.comboCount} 组合 · ${state.config.bpm} BPM`;
+  selectors.levelMeta.textContent = `${state.config.comboCount} combos · ${state.config.bpm} BPM`;
   selectors.comboReadout.textContent = `${state.playerChain.length} / ${state.config.comboCount}`;
   selectors.beatReadout.textContent = String(targetBeats);
   selectors.accuracyReadout.textContent = accuracy;
-  selectors.targetBeatCount.textContent = `${targetBeats} 拍`;
-  selectors.playerBeatCount.textContent = `${playerBeats} 拍`;
+  selectors.targetBeatCount.textContent = `${targetBeats} beats`;
+  selectors.playerBeatCount.textContent = `${playerBeats} beats`;
+  selectors.drillLabel.textContent = `Drill ${state.level}`;
 }
 
 function renderChain(container, chain, role) {
@@ -142,7 +144,7 @@ function renderPlayerChain() {
       empty.className = "empty-slot";
       empty.type = "button";
       empty.textContent = "+";
-      empty.title = `第 ${index + 1} 格`;
+      empty.title = `Slot ${index + 1}`;
       empty.addEventListener("click", () => focusLibrary());
       return empty;
     }
@@ -154,7 +156,7 @@ function renderPlayerChain() {
     });
     tile.classList.add("player-tile");
     if (state.mismatches.has(index)) tile.classList.add("mismatch");
-    tile.title = "点击移除这张卡";
+    tile.title = "Remove this card";
     tile.addEventListener("click", () => {
       state.playerChain.splice(index, 1);
       state.lastResult = null;
@@ -170,7 +172,7 @@ function renderPlayerChain() {
 
 function renderLibrary() {
   const unlockedPatterns = getUnlockedPatterns(state.config);
-  selectors.libraryCount.textContent = `${unlockedPatterns.length} 张`;
+  selectors.libraryCount.textContent = String(unlockedPatterns.length);
   selectors.patternLibrary.replaceChildren(
     ...unlockedPatterns.map((pattern) => {
       const tile = createPatternTile(pattern, { compact: false });
@@ -189,10 +191,11 @@ function createPatternTile(pattern, options = {}) {
   button.setAttribute("aria-label", pattern.name);
   if (options.active) button.classList.add("active");
   if (options.compact) button.classList.add("compact");
+  if (pattern.beats > 1) button.classList.add("wide-rhythm");
 
   const number = document.createElement("span");
   number.className = "combo-number";
-  number.textContent = Number.isInteger(options.index) ? String(options.index + 1) : `${pattern.beats}拍`;
+  number.textContent = Number.isInteger(options.index) ? String(options.index + 1) : `${pattern.beats} beat`;
 
   const symbol = document.createElement("span");
   symbol.className = "note-symbol";
@@ -252,9 +255,9 @@ function checkPlayerChain() {
       progress.passedLevels.sort((first, second) => first - second);
     }
     saveProgress();
-    setStatus(`Perfect chain · Level ${state.level} clear`, "success");
+    setStatus(`Perfect · Drill ${state.level}`, "success");
   } else if (state.playerChain.length < state.targetChain.length) {
-    setStatus(`${state.targetChain.length - state.playerChain.length} combos left`, "warn");
+    setStatus(`${state.targetChain.length - state.playerChain.length} left`, "warn");
   } else {
     setStatus(`${result.matched} / ${result.total} matched`, "warn");
   }
@@ -328,52 +331,56 @@ async function getAudioContext() {
 function scheduleAudioEvent(audioContext, event) {
   if (!event.audible) return;
 
-  if (event.kind === "pulse") {
-    playOscillator(audioContext, {
-      start: event.timeSeconds,
-      duration: event.durationSeconds,
-      frequency: event.tone === "pulse" ? 690 : 520,
-      type: "square",
-      gain: 0.035 * event.velocity,
-    });
-    return;
-  }
-
-  const voices = {
-    kick: { frequency: 132, type: "sine", gain: 0.16 },
-    stick: { frequency: 960, type: "triangle", gain: 0.075 },
-    wood: { frequency: 1240, type: "square", gain: 0.055 },
-    clap: { frequency: 1560, type: "sawtooth", gain: 0.06 },
-  };
-  const voice = voices[event.tone] || voices.stick;
-
-  playOscillator(audioContext, {
+  playSnare(audioContext, {
     start: event.timeSeconds,
-    duration: event.durationSeconds,
-    frequency: voice.frequency,
-    type: voice.type,
-    gain: voice.gain * event.velocity,
-    bend: event.tone === "kick",
+    duration: event.kind === "pulse" ? 0.045 : event.durationSeconds,
+    velocity: event.kind === "pulse" ? event.velocity * 0.55 : event.velocity,
+    accent: event.kind === "note",
   });
 }
 
-function playOscillator(audioContext, options) {
-  const oscillator = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-  oscillator.type = options.type;
-  oscillator.frequency.setValueAtTime(options.frequency, options.start);
-  if (options.bend) {
-    oscillator.frequency.exponentialRampToValueAtTime(55, options.start + options.duration);
+function playSnare(audioContext, options) {
+  const duration = Math.max(0.045, Math.min(0.16, options.duration));
+  const noise = audioContext.createBufferSource();
+  const noiseFilter = audioContext.createBiquadFilter();
+  const noiseGain = audioContext.createGain();
+  const body = audioContext.createOscillator();
+  const bodyGain = audioContext.createGain();
+  const sampleCount = Math.ceil(audioContext.sampleRate * duration);
+  const buffer = audioContext.createBuffer(1, sampleCount, audioContext.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  for (let index = 0; index < sampleCount; index += 1) {
+    data[index] = (Math.random() * 2 - 1) * (1 - index / sampleCount);
   }
-  gain.gain.setValueAtTime(0.0001, options.start);
-  gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, options.gain), options.start + 0.006);
-  gain.gain.exponentialRampToValueAtTime(0.0001, options.start + options.duration);
-  oscillator.connect(gain).connect(audioContext.destination);
-  oscillator.start(options.start);
-  oscillator.stop(options.start + options.duration + 0.02);
-  state.audioNodes.push(oscillator);
-  oscillator.addEventListener("ended", () => {
-    state.audioNodes = state.audioNodes.filter((node) => node !== oscillator);
+
+  noise.buffer = buffer;
+  noiseFilter.type = "bandpass";
+  noiseFilter.frequency.setValueAtTime(options.accent ? 2400 : 1800, options.start);
+  noiseFilter.Q.setValueAtTime(0.85, options.start);
+  noiseGain.gain.setValueAtTime(0.0001, options.start);
+  noiseGain.gain.exponentialRampToValueAtTime(0.16 * options.velocity, options.start + 0.006);
+  noiseGain.gain.exponentialRampToValueAtTime(0.0001, options.start + duration);
+
+  body.type = "triangle";
+  body.frequency.setValueAtTime(options.accent ? 205 : 175, options.start);
+  body.frequency.exponentialRampToValueAtTime(125, options.start + duration);
+  bodyGain.gain.setValueAtTime(0.0001, options.start);
+  bodyGain.gain.exponentialRampToValueAtTime(0.07 * options.velocity, options.start + 0.004);
+  bodyGain.gain.exponentialRampToValueAtTime(0.0001, options.start + duration * 0.72);
+
+  noise.connect(noiseFilter).connect(noiseGain).connect(audioContext.destination);
+  body.connect(bodyGain).connect(audioContext.destination);
+  noise.start(options.start);
+  body.start(options.start);
+  noise.stop(options.start + duration + 0.02);
+  body.stop(options.start + duration + 0.02);
+
+  state.audioNodes.push(noise, body);
+  [noise, body].forEach((node) => {
+    node.addEventListener("ended", () => {
+      state.audioNodes = state.audioNodes.filter((audioNode) => audioNode !== node);
+    });
   });
 }
 
