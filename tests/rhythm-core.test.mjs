@@ -3,15 +3,19 @@ import assert from "node:assert/strict";
 
 import {
   LEVEL_COUNT,
+  SOUND_PRESETS,
   SNARE_TONE,
+  SPEED_OPTIONS,
   RHYTHM_PATTERNS,
   buildLevels,
   calculateChainBeats,
+  createTapTempoTracker,
   createTargetChain,
   evaluatePlayerChain,
   getLevelConfig,
   getPatternById,
   getUnlockedPatterns,
+  resolvePlaybackBpm,
   scheduleChainEvents,
 } from "../assets/rhythm-core.js";
 
@@ -130,4 +134,30 @@ test("scheduled audio events use snare tone only", () => {
 
   assert.deepEqual(unexpectedTones, []);
   assert.ok(events.some((event) => event.tone === SNARE_TONE));
+});
+
+test("sound presets expose snare as the default plus common alternate effects", () => {
+  const ids = SOUND_PRESETS.map((preset) => preset.id);
+
+  assert.equal(ids[0], SNARE_TONE);
+  assert.deepEqual(ids, ["snare", "kick", "closedHat", "clap", "woodblock"]);
+});
+
+test("speed options scale the level BPM predictably", () => {
+  assert.deepEqual(
+    SPEED_OPTIONS.map((option) => resolvePlaybackBpm(96, option.multiplier)),
+    [72, 96, 120, 144]
+  );
+  assert.equal(resolvePlaybackBpm(96, 0.1), 48);
+  assert.equal(resolvePlaybackBpm(96, 3), 192);
+});
+
+test("tap tempo tracker estimates BPM from recent tap intervals", () => {
+  const tracker = createTapTempoTracker({ windowSize: 4 });
+
+  assert.equal(tracker.tap(0), null);
+  assert.equal(tracker.tap(500), 120);
+  assert.equal(tracker.tap(1000), 120);
+  assert.equal(tracker.tap(1500), 120);
+  assert.equal(tracker.tap(5000), null);
 });

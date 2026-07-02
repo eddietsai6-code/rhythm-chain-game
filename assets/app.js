@@ -1,11 +1,16 @@
 import {
+  DEFAULT_SOUND_ID,
   LEVEL_COUNT,
+  SOUND_PRESETS,
+  SPEED_OPTIONS,
   calculateChainBeats,
+  createTapTempoTracker,
   createTargetChain,
   evaluatePlayerChain,
   getLevelConfig,
   getPatternById,
   getUnlockedPatterns,
+  resolvePlaybackBpm,
   scheduleChainEvents,
 } from "./rhythm-core.js";
 
@@ -32,6 +37,10 @@ const selectors = {
   clearButton: document.querySelector("#clearButton"),
   nextButton: document.querySelector("#nextButton"),
   previewDeckButton: document.querySelector("#previewDeckButton"),
+  soundSelect: document.querySelector("#soundSelect"),
+  speedSelect: document.querySelector("#speedSelect"),
+  tapButton: document.querySelector("#tapButton"),
+  tapTempoLabel: document.querySelector("#tapTempoLabel"),
 };
 
 const progress = loadProgress();
@@ -39,6 +48,10 @@ const state = {
   level: progress.currentLevel,
   targetChain: [],
   playerChain: [],
+  soundId: resolveSoundId(progress.soundId),
+  speedId: resolveSpeedId(progress.speedId),
+  tapTracker: createTapTempoTracker({ windowSize: 4 }),
+  tapBpm: null,
   activeTargetIndex: null,
   activePlayerIndex: null,
   mismatches: new Set(),
@@ -49,11 +62,37 @@ const state = {
 };
 
 function init() {
+  renderControls();
   bindControls();
   loadLevel(state.level);
 }
 
+function renderControls() {
+  selectors.soundSelect.replaceChildren(
+    ...SOUND_PRESETS.map((preset) => {
+      const option = document.createElement("option");
+      option.value = preset.id;
+      option.textContent = preset.label;
+      return option;
+    })
+  );
+  selectors.soundSelect.value = state.soundId;
+
+  selectors.speedSelect.replaceChildren(
+    ...SPEED_OPTIONS.map((optionConfig) => {
+      const option = document.createElement("option");
+      option.value = optionConfig.id;
+      option.textContent = optionConfig.label;
+      return option;
+    })
+  );
+  selectors.speedSelect.value = state.speedId;
+}
+
 function bindControls() {
+  selectors.soundSelect.addEventListener("change", handleSoundChange);
+  selectors.speedSelect.addEventListener("change", handleSpeedChange);
+  selectors.tapButton.addEventListener("click", handleTap);
   selectors.playTargetButton.addEventListener("click", () => playChain("target"));
   selectors.playPlayerButton.addEventListener("click", () => playChain("player"));
   selectors.checkButton.addEventListener("click", checkPlayerChain);
@@ -63,12 +102,47 @@ function bindControls() {
   selectors.previewDeckButton.addEventListener("click", previewDeck);
 }
 
+async function handleSoundChange() {
+  state.soundId = resolveSoundId(selectors.soundSelect.value);
+  progress.soundId = state.soundId;
+  saveProgress();
+  await playTapSound();
+  setStatus(`音效: ${getSoundPreset(state.soundId).label}`, "idle");
+}
+
+function handleSpeedChange() {
+  state.speedId = resolveSpeedId(selectors.speedSelect.value);
+  progress.speedId = state.speedId;
+  saveProgress();
+  renderReadouts();
+  setStatus(`速度: ${getSpeedOption(state.speedId).label}`, "idle");
+}
+
+async function handleTap() {
+  const bpm = state.tapTracker.tap(performance.now());
+  await playTapSound();
+
+  if (bpm) {
+    state.tapBpm = bpm;
+    selectors.tapTempoLabel.textContent = `${bpm} BPM`;
+    renderReadouts();
+    setStatus(`TAP: ${bpm} BPM`, "playing");
+    return;
+  }
+
+  selectors.tapTempoLabel.textContent = "-- BPM";
+  setStatus("TAP", "playing");
+}
+
 function loadLevel(levelNumber) {
   clearPlayback();
   state.level = Math.min(LEVEL_COUNT, Math.max(1, Number(levelNumber) || 1));
   state.config = getLevelConfig(state.level);
   state.targetChain = createTargetChain(state.config);
   state.playerChain = [];
+  state.tapBpm = null;
+  state.tapTracker.reset();
+  selectors.tapTempoLabel.textContent = "-- BPM";
   state.activeTargetIndex = null;
   state.activePlayerIndex = null;
   state.mismatches = new Set();
@@ -76,7 +150,7 @@ function loadLevel(levelNumber) {
   progress.currentLevel = state.level;
   saveProgress();
   render();
-  setStatus("Ready", "idle");
+  setStatus("准备", "idle");
 }
 
 function render() {
@@ -95,7 +169,7 @@ function renderLevelList() {
       button.className = "level-button";
       button.type = "button";
       button.textContent = String(level);
-      button.setAttribute("aria-label", `Drill ${level}`);
+      button.setAttribute("aria-label", `关卡 ${level}`);
       if (level === state.level) button.classList.add("active");
       if (progress.passedLevels.includes(level)) button.classList.add("passed");
       button.addEventListener("click", () => loadLevel(level));
@@ -108,15 +182,16 @@ function renderReadouts() {
   const targetBeats = calculateChainBeats(state.targetChain);
   const playerBeats = calculateChainBeats(state.playerChain);
   const accuracy = state.lastResult ? `${Math.round(state.lastResult.accuracy * 100)}%` : "0%";
+  const bpm = getPlaybackBpm();
 
-  selectors.levelTitle.textContent = `Level ${state.level} / ${LEVEL_COUNT}`;
-  selectors.levelMeta.textContent = `${state.config.comboCount} combos · ${state.config.bpm} BPM`;
+  selectors.levelTitle.textContent = `第 ${state.level} / ${LEVEL_COUNT} 关`;
+  selectors.levelMeta.textContent = `${state.config.comboCount} 组合 / ${bpm} BPM`;
   selectors.comboReadout.textContent = `${state.playerChain.length} / ${state.config.comboCount}`;
   selectors.beatReadout.textContent = String(targetBeats);
   selectors.accuracyReadout.textContent = accuracy;
-  selectors.targetBeatCount.textContent = `${targetBeats} beats`;
-  selectors.playerBeatCount.textContent = `${playerBeats} beats`;
-  selectors.drillLabel.textContent = `Drill ${state.level}`;
+  selectors.targetBeatCount.textContent = `${targetBeats} 拍`;
+  selectors.playerBeatCount.textContent = `${playerBeats} 拍`;
+  selectors.drillLabel.textContent = `关卡 ${state.level}`;
 }
 
 function renderChain(container, chain, role) {
@@ -130,7 +205,12 @@ function renderChain(container, chain, role) {
       });
       tile.classList.add(`${role}-tile`);
       tile.type = "button";
-      tile.disabled = role === "target";
+
+      if (role === "target") {
+        tile.title = "试听这个节奏";
+        tile.addEventListener("click", () => playPreview(pattern.id));
+      }
+
       return tile;
     })
   );
@@ -145,7 +225,10 @@ function renderPlayerChain() {
       empty.type = "button";
       empty.textContent = "+";
       empty.title = `Slot ${index + 1}`;
-      empty.addEventListener("click", () => focusLibrary());
+      empty.addEventListener("click", () => {
+        const targetPattern = state.targetChain[index] || state.targetChain[state.playerChain.length];
+        if (targetPattern) addPattern(targetPattern);
+      });
       return empty;
     }
 
@@ -156,7 +239,7 @@ function renderPlayerChain() {
     });
     tile.classList.add("player-tile");
     if (state.mismatches.has(index)) tile.classList.add("mismatch");
-    tile.title = "Remove this card";
+    tile.title = "移除这个节奏";
     tile.addEventListener("click", () => {
       state.playerChain.splice(index, 1);
       state.lastResult = null;
@@ -215,7 +298,7 @@ function createPatternTile(pattern, options = {}) {
 
 function addPattern(patternId) {
   if (state.playerChain.length >= state.config.comboCount) {
-    setStatus("Chain full", "warn");
+    setStatus("链条已满", "warn");
     return;
   }
 
@@ -232,7 +315,7 @@ function undoLastCard() {
   state.lastResult = null;
   state.mismatches = new Set();
   render();
-  setStatus("Undo", "idle");
+  setStatus("撤销", "idle");
 }
 
 function clearPlayerChain() {
@@ -241,7 +324,7 @@ function clearPlayerChain() {
   state.mismatches = new Set();
   clearPlayback();
   render();
-  setStatus("Cleared", "idle");
+  setStatus("已清空", "idle");
 }
 
 function checkPlayerChain() {
@@ -255,11 +338,11 @@ function checkPlayerChain() {
       progress.passedLevels.sort((first, second) => first - second);
     }
     saveProgress();
-    setStatus(`Perfect · Drill ${state.level}`, "success");
+    setStatus(`通过: 关卡 ${state.level}`, "success");
   } else if (state.playerChain.length < state.targetChain.length) {
-    setStatus(`${state.targetChain.length - state.playerChain.length} left`, "warn");
+    setStatus(`还差 ${state.targetChain.length - state.playerChain.length} 个`, "warn");
   } else {
-    setStatus(`${result.matched} / ${result.total} matched`, "warn");
+    setStatus(`${result.matched} / ${result.total} 匹配`, "warn");
   }
 
   render();
@@ -268,7 +351,7 @@ function checkPlayerChain() {
 async function playChain(kind) {
   const chain = kind === "target" ? state.targetChain : state.playerChain;
   if (chain.length === 0) {
-    setStatus("Empty chain", "warn");
+    setStatus("没有内容", "warn");
     return;
   }
 
@@ -276,19 +359,19 @@ async function playChain(kind) {
   const audioContext = await getAudioContext();
   const startTime = audioContext.currentTime + 0.08;
   const events = scheduleChainEvents(chain, {
-    bpm: state.config.bpm,
+    bpm: getPlaybackBpm(),
     startTime,
   });
 
   events.forEach((event) => scheduleAudioEvent(audioContext, event));
   scheduleHighlights(events, kind, startTime);
-  setStatus(kind === "target" ? "Playing target" : "Playing player chain", "playing");
+  setStatus(kind === "target" ? "正在播放目标" : "正在播放链条", "playing");
 }
 
 async function playPreview(patternId) {
   const audioContext = await getAudioContext();
   const startTime = audioContext.currentTime + 0.02;
-  scheduleChainEvents([patternId], { bpm: state.config.bpm, startTime }).forEach((event) =>
+  scheduleChainEvents([patternId], { bpm: getPlaybackBpm(), startTime }).forEach((event) =>
     scheduleAudioEvent(audioContext, event)
   );
 }
@@ -300,20 +383,34 @@ async function previewDeck() {
   clearPlayback();
   const audioContext = await getAudioContext();
   const startTime = audioContext.currentTime + 0.08;
-  const shortBpm = Math.min(138, state.config.bpm + 18);
+  const shortBpm = resolvePlaybackBpm(Math.min(138, state.config.bpm + 18), getSpeedOption(state.speedId).multiplier);
   const events = scheduleChainEvents(deckChain, {
     bpm: shortBpm,
     startTime,
   });
   events.forEach((event) => scheduleAudioEvent(audioContext, event));
   scheduleHighlights(events, "deck", startTime);
-  setStatus("Preview deck", "playing");
+  setStatus("试听音效", "playing");
+}
+
+async function playTapSound() {
+  try {
+    const audioContext = await getAudioContext();
+    playSoundPreset(audioContext, state.soundId, {
+      start: audioContext.currentTime + 0.01,
+      duration: 0.08,
+      velocity: 0.95,
+      accent: true,
+    });
+  } catch {
+    // getAudioContext already reports the browser audio issue in the UI.
+  }
 }
 
 async function getAudioContext() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   if (!AudioContextClass) {
-    setStatus("Web Audio unavailable", "warn");
+    setStatus("浏览器不支持音频", "warn");
     throw new Error("Web Audio unavailable");
   }
 
@@ -331,12 +428,33 @@ async function getAudioContext() {
 function scheduleAudioEvent(audioContext, event) {
   if (!event.audible) return;
 
-  playSnare(audioContext, {
+  playSoundPreset(audioContext, state.soundId, {
     start: event.timeSeconds,
     duration: event.kind === "pulse" ? 0.045 : event.durationSeconds,
     velocity: event.kind === "pulse" ? event.velocity * 0.55 : event.velocity,
     accent: event.kind === "note",
   });
+}
+
+function playSoundPreset(audioContext, soundId, options) {
+  switch (resolveSoundId(soundId)) {
+    case "kick":
+      playKick(audioContext, options);
+      break;
+    case "closedHat":
+      playClosedHat(audioContext, options);
+      break;
+    case "clap":
+      playClap(audioContext, options);
+      break;
+    case "woodblock":
+      playWoodblock(audioContext, options);
+      break;
+    case "snare":
+    default:
+      playSnare(audioContext, options);
+      break;
+  }
 }
 
 function playSnare(audioContext, options) {
@@ -346,13 +464,7 @@ function playSnare(audioContext, options) {
   const noiseGain = audioContext.createGain();
   const body = audioContext.createOscillator();
   const bodyGain = audioContext.createGain();
-  const sampleCount = Math.ceil(audioContext.sampleRate * duration);
-  const buffer = audioContext.createBuffer(1, sampleCount, audioContext.sampleRate);
-  const data = buffer.getChannelData(0);
-
-  for (let index = 0; index < sampleCount; index += 1) {
-    data[index] = (Math.random() * 2 - 1) * (1 - index / sampleCount);
-  }
+  const buffer = createNoiseBuffer(audioContext, duration);
 
   noise.buffer = buffer;
   noiseFilter.type = "bandpass";
@@ -371,16 +483,99 @@ function playSnare(audioContext, options) {
 
   noise.connect(noiseFilter).connect(noiseGain).connect(audioContext.destination);
   body.connect(bodyGain).connect(audioContext.destination);
-  noise.start(options.start);
-  body.start(options.start);
-  noise.stop(options.start + duration + 0.02);
-  body.stop(options.start + duration + 0.02);
+  startAndTrack(noise, options.start, duration + 0.02);
+  startAndTrack(body, options.start, duration + 0.02);
+}
 
-  state.audioNodes.push(noise, body);
-  [noise, body].forEach((node) => {
-    node.addEventListener("ended", () => {
-      state.audioNodes = state.audioNodes.filter((audioNode) => audioNode !== node);
-    });
+function playKick(audioContext, options) {
+  const duration = Math.max(0.11, Math.min(0.22, options.duration * 1.6));
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(142, options.start);
+  oscillator.frequency.exponentialRampToValueAtTime(48, options.start + duration);
+  gain.gain.setValueAtTime(0.0001, options.start);
+  gain.gain.exponentialRampToValueAtTime(0.42 * options.velocity, options.start + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.0001, options.start + duration);
+
+  oscillator.connect(gain).connect(audioContext.destination);
+  startAndTrack(oscillator, options.start, duration + 0.02);
+}
+
+function playClosedHat(audioContext, options) {
+  const duration = Math.max(0.035, Math.min(0.08, options.duration));
+  const noise = audioContext.createBufferSource();
+  const filter = audioContext.createBiquadFilter();
+  const gain = audioContext.createGain();
+
+  noise.buffer = createNoiseBuffer(audioContext, duration);
+  filter.type = "highpass";
+  filter.frequency.setValueAtTime(6800, options.start);
+  gain.gain.setValueAtTime(0.0001, options.start);
+  gain.gain.exponentialRampToValueAtTime(0.11 * options.velocity, options.start + 0.003);
+  gain.gain.exponentialRampToValueAtTime(0.0001, options.start + duration);
+
+  noise.connect(filter).connect(gain).connect(audioContext.destination);
+  startAndTrack(noise, options.start, duration + 0.01);
+}
+
+function playClap(audioContext, options) {
+  [0, 0.018, 0.037].forEach((delay, index) => {
+    const duration = 0.055 + index * 0.012;
+    const source = audioContext.createBufferSource();
+    const filter = audioContext.createBiquadFilter();
+    const gain = audioContext.createGain();
+    const start = options.start + delay;
+
+    source.buffer = createNoiseBuffer(audioContext, duration);
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(1700 + index * 420, start);
+    filter.Q.setValueAtTime(0.75, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.1 * options.velocity, start + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+
+    source.connect(filter).connect(gain).connect(audioContext.destination);
+    startAndTrack(source, start, duration + 0.01);
+  });
+}
+
+function playWoodblock(audioContext, options) {
+  const duration = Math.max(0.04, Math.min(0.11, options.duration));
+  [860, 1240].forEach((frequency, index) => {
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = "square";
+    oscillator.frequency.setValueAtTime(frequency, options.start);
+    gain.gain.setValueAtTime(0.0001, options.start);
+    gain.gain.exponentialRampToValueAtTime((index === 0 ? 0.085 : 0.04) * options.velocity, options.start + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, options.start + duration);
+
+    oscillator.connect(gain).connect(audioContext.destination);
+    startAndTrack(oscillator, options.start, duration + 0.015);
+  });
+}
+
+function createNoiseBuffer(audioContext, duration) {
+  const sampleCount = Math.ceil(audioContext.sampleRate * duration);
+  const buffer = audioContext.createBuffer(1, sampleCount, audioContext.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  for (let index = 0; index < sampleCount; index += 1) {
+    data[index] = (Math.random() * 2 - 1) * (1 - index / sampleCount);
+  }
+
+  return buffer;
+}
+
+function startAndTrack(node, start, duration) {
+  node.start(start);
+  node.stop(start + duration);
+  state.audioNodes.push(node);
+  node.addEventListener("ended", () => {
+    state.audioNodes = state.audioNodes.filter((audioNode) => audioNode !== node);
   });
 }
 
@@ -421,7 +616,7 @@ function scheduleHighlights(events, kind, startTime) {
       renderChain(selectors.targetChain, state.targetChain, "target");
       renderPlayerChain();
       clearDeckHighlight();
-      setStatus("Ready", "idle");
+      setStatus("准备", "idle");
     }, endDelay)
   );
 }
@@ -457,9 +652,25 @@ function setStatus(message, variant) {
   selectors.statusText.dataset.variant = variant;
 }
 
-function focusLibrary() {
-  const firstCard = selectors.patternLibrary.querySelector("button:not(:disabled)");
-  firstCard?.focus();
+function getPlaybackBpm() {
+  const baseBpm = state.tapBpm || state.config.bpm;
+  return resolvePlaybackBpm(baseBpm, getSpeedOption(state.speedId).multiplier);
+}
+
+function getSoundPreset(soundId) {
+  return SOUND_PRESETS.find((preset) => preset.id === soundId) || SOUND_PRESETS[0];
+}
+
+function getSpeedOption(speedId) {
+  return SPEED_OPTIONS.find((option) => option.id === speedId) || SPEED_OPTIONS[1];
+}
+
+function resolveSoundId(soundId) {
+  return SOUND_PRESETS.some((preset) => preset.id === soundId) ? soundId : DEFAULT_SOUND_ID;
+}
+
+function resolveSpeedId(speedId) {
+  return SPEED_OPTIONS.some((option) => option.id === speedId) ? speedId : "normal";
 }
 
 function loadProgress() {
@@ -468,9 +679,11 @@ function loadProgress() {
     return {
       currentLevel: parsed.currentLevel || 1,
       passedLevels: Array.isArray(parsed.passedLevels) ? parsed.passedLevels : [],
+      soundId: resolveSoundId(parsed.soundId),
+      speedId: resolveSpeedId(parsed.speedId),
     };
   } catch {
-    return { currentLevel: 1, passedLevels: [] };
+    return { currentLevel: 1, passedLevels: [], soundId: DEFAULT_SOUND_ID, speedId: "normal" };
   }
 }
 
@@ -480,6 +693,8 @@ function saveProgress() {
     JSON.stringify({
       currentLevel: state.level,
       passedLevels: progress.passedLevels,
+      soundId: state.soundId,
+      speedId: state.speedId,
     })
   );
 }

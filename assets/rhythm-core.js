@@ -1,7 +1,21 @@
 export const LEVEL_COUNT = 30;
 export const SNARE_TONE = "snare";
+export const DEFAULT_SOUND_ID = SNARE_TONE;
+export const SOUND_PRESETS = deepFreeze([
+  { id: SNARE_TONE, label: "军鼓", shortLabel: "Snare" },
+  { id: "kick", label: "底鼓", shortLabel: "Kick" },
+  { id: "closedHat", label: "踩镲", shortLabel: "Hat" },
+  { id: "clap", label: "拍手", shortLabel: "Clap" },
+  { id: "woodblock", label: "木鱼", shortLabel: "Wood" },
+]);
 export const DRUM_KIT_TONES = deepFreeze([
-  SNARE_TONE,
+  ...SOUND_PRESETS.map((preset) => preset.id),
+]);
+export const SPEED_OPTIONS = deepFreeze([
+  { id: "slow", label: "慢速", multiplier: 0.75 },
+  { id: "normal", label: "原速", multiplier: 1 },
+  { id: "fast", label: "快速", multiplier: 1.25 },
+  { id: "challenge", label: "挑战", multiplier: 1.5 },
 ]);
 const MIN_COMBO_COUNT = 4;
 const MAX_COMBO_COUNT = 16;
@@ -369,6 +383,51 @@ export function scheduleChainEvents(chain, options = {}) {
     }
     return first.kind === "pulse" ? -1 : 1;
   });
+}
+
+export function resolvePlaybackBpm(baseBpm, speedMultiplier = 1) {
+  const base = Number(baseBpm) > 0 ? Number(baseBpm) : DEFAULT_BPM;
+  const multiplier = Number(speedMultiplier);
+  const safeMultiplier = Number.isFinite(multiplier) ? Math.min(2, Math.max(0.5, multiplier)) : 1;
+
+  return Math.round(base * safeMultiplier);
+}
+
+export function createTapTempoTracker(options = {}) {
+  const windowSize = Math.max(2, Math.trunc(Number(options.windowSize) || 4));
+  const resetAfterMs = Number(options.resetAfterMs) > 0 ? Number(options.resetAfterMs) : 2000;
+  let taps = [];
+
+  return {
+    tap(timeMs = Date.now()) {
+      const time = Number(timeMs);
+      if (!Number.isFinite(time)) return null;
+
+      if (taps.length > 0 && time - taps.at(-1) > resetAfterMs) {
+        taps = [];
+      }
+
+      taps.push(time);
+      if (taps.length > windowSize) taps = taps.slice(-windowSize);
+      if (taps.length < 2) return null;
+
+      const intervals = [];
+      for (let index = 1; index < taps.length; index += 1) {
+        const interval = taps[index] - taps[index - 1];
+        if (interval <= 0) return null;
+        intervals.push(interval);
+      }
+
+      const averageInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
+      return Math.round(60000 / averageInterval);
+    },
+    reset() {
+      taps = [];
+    },
+    get count() {
+      return taps.length;
+    },
+  };
 }
 
 export function getPatternById(patternId) {

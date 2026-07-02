@@ -362,8 +362,83 @@ h1 {
 
 .stage-toolbar {
   display: grid;
-  gap: 12px;
-  margin-top: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: clamp(7px, 2vw, 12px);
+  margin-top: clamp(10px, 3vw, 18px);
+}
+
+.control-pill,
+.tap-control {
+  min-width: 0;
+  min-height: clamp(54px, 11vw, 66px);
+  border: 0;
+  border-radius: clamp(10px, 2vw, 14px);
+  background: #f2f2f2;
+  color: var(--ink);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+}
+
+.control-pill {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.control-pill span,
+.tap-control span {
+  color: var(--muted);
+  font-size: clamp(9px, 2.2vw, 11px);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.control-pill select {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: clamp(14px, 3.2vw, 18px);
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+  text-align-last: center;
+  outline: 0;
+}
+
+.tap-control {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 8px 10px;
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.tap-control strong {
+  display: block;
+  width: 100%;
+  color: var(--ink);
+  font-size: clamp(12px, 3vw, 16px);
+  font-weight: 900;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+
+.tap-control:active {
+  transform: translateY(1px);
+  background: #e9e9e9;
+}
+
+.legacy-controls[hidden],
+.library-panel[hidden],
+.level-panel[hidden] {
+  display: none !important;
 }
 
 .readouts {

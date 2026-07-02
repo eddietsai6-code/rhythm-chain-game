@@ -3,23 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Rhythm Challenge</title>
+    <title>节奏游戏</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2328a9f4'/%3E%3Ccircle cx='32' cy='32' r='17' fill='white'/%3E%3C/svg%3E" />
     <link rel="stylesheet" href="./assets/styles.css" />
   </head>
   <body>
     <main class="game-shell">
-      <section class="practice-card" aria-label="Rhythm Challenge">
+      <section class="practice-card" aria-label="节奏游戏">
         <header class="topbar">
           <div class="brand-lockup">
             <div class="brand-mark" aria-hidden="true"></div>
             <div>
-              <h1>Rhythm Challenge</h1>
-              <p id="levelTitle">Level 1 / 30</p>
+              <h1>节奏游戏</h1>
+              <p id="levelTitle">第 1 / 30 关</p>
             </div>
           </div>
           <div class="level-summary" aria-live="polite">
-            <strong id="levelMeta">4 combos · 78 BPM</strong>
+            <strong id="levelMeta">4 组合 / 78 BPM</strong>
           </div>
         </header>
 
@@ -33,71 +33,77 @@
         <section class="stage-panel">
           <div class="chain-area">
             <div class="chain-label">
-              <span>Target</span>
-              <strong id="targetBeatCount">4 beats</strong>
+              <span>目标</span>
+              <strong id="targetBeatCount">4 拍</strong>
             </div>
             <div class="chain-row target-chain" id="targetChain"></div>
 
             <div class="chain-label player-label">
-              <span>Your Chain</span>
-              <strong id="playerBeatCount">0 beats</strong>
+              <span>我的链条</span>
+              <strong id="playerBeatCount">0 拍</strong>
             </div>
             <div class="chain-row player-chain" id="playerChain"></div>
           </div>
 
           <div class="drill-footer">
-            <strong id="drillLabel">Drill 1</strong>
-            <span id="statusText" aria-live="polite">Ready</span>
+            <strong id="drillLabel">关卡 1</strong>
+            <span id="statusText" aria-live="polite">准备</span>
           </div>
 
-          <div class="stage-toolbar">
-            <div class="readouts">
-              <div>
-                <span>Combos</span>
-                <strong id="comboReadout">0 / 4</strong>
+          <div class="stage-toolbar" aria-label="功能控制">
+            <label class="control-pill" for="soundSelect">
+              <span>音效</span>
+              <select id="soundSelect" aria-label="选择音效"></select>
+            </label>
+            <label class="control-pill" for="speedSelect">
+              <span>速度</span>
+              <select id="speedSelect" aria-label="选择速度"></select>
+            </label>
+            <button class="tap-control" id="tapButton" type="button" aria-label="TAP">
+              <span>TAP</span>
+              <strong id="tapTempoLabel">-- BPM</strong>
+            </button>
+
+            <div class="legacy-controls" hidden>
+              <div class="readouts">
+                <div>
+                  <span>Combos</span>
+                  <strong id="comboReadout">0 / 4</strong>
+                </div>
+                <div>
+                  <span>Beats</span>
+                  <strong id="beatReadout">4</strong>
+                </div>
+                <div>
+                  <span>Score</span>
+                  <strong id="accuracyReadout">0%</strong>
+                </div>
               </div>
-              <div>
-                <span>Beats</span>
-                <strong id="beatReadout">4</strong>
+              <div class="transport">
+                <button class="icon-button" id="playTargetButton" type="button" title="Play target" aria-label="Play target">Target</button>
+                <button class="icon-button" id="playPlayerButton" type="button" title="Play your chain" aria-label="Play your chain">Mine</button>
+                <button class="icon-button check" id="checkButton" type="button" title="Check" aria-label="Check">Check</button>
+                <button class="icon-only" id="undoButton" type="button" title="Undo" aria-label="Undo">Undo</button>
+                <button class="icon-only" id="clearButton" type="button" title="Clear" aria-label="Clear">Clear</button>
+                <button class="icon-only next" id="nextButton" type="button" title="Next level" aria-label="Next level">Next</button>
               </div>
-              <div>
-                <span>Score</span>
-                <strong id="accuracyReadout">0%</strong>
-              </div>
-            </div>
-            <div class="transport">
-              <button class="icon-button" id="playTargetButton" type="button" title="Play target" aria-label="Play target">
-                <span aria-hidden="true">▶</span>
-                <span>Target</span>
-              </button>
-              <button class="icon-button" id="playPlayerButton" type="button" title="Play your chain" aria-label="Play your chain">
-                <span aria-hidden="true">▶</span>
-                <span>Mine</span>
-              </button>
-              <button class="icon-button check" id="checkButton" type="button" title="Check" aria-label="Check">
-                <span aria-hidden="true">✓</span>
-                <span>Check</span>
-              </button>
-              <button class="icon-only" id="undoButton" type="button" title="Undo" aria-label="Undo">↶</button>
-              <button class="icon-only" id="clearButton" type="button" title="Clear" aria-label="Clear">×</button>
-              <button class="icon-only next" id="nextButton" type="button" title="Next level" aria-label="Next level">→</button>
             </div>
           </div>
         </section>
 
-        <aside class="library-panel">
+        <aside class="library-panel" hidden>
           <div class="library-head">
             <div>
-              <span class="panel-label">Rhythm Cards</span>
+              <span class="panel-label">节奏卡片</span>
               <strong id="libraryCount">4</strong>
             </div>
-            <button class="ghost-button" id="previewDeckButton" type="button">Audition</button>
+            <button class="ghost-button" id="previewDeckButton" type="button">试听</button>
           </div>
           <div class="pattern-library" id="patternLibrary"></div>
         </aside>
 
-        <aside class="level-panel">
-          <div class="panel-label">30 Drills</div>
+        <aside class="level-panel" hidden>
+          <div class="panel-label">30 关</div>
           <div class="level-grid" id="levelList"></div>
         </aside>
       </section>
