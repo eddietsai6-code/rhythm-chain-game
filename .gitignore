@@ -6,5 +6,6 @@ tmp/
 *.err.log
 .env
 .env.*
+.wrangler/
 .DS_Store
 Thumbs.db
