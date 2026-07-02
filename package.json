@@ -1,0 +1,23 @@
+{
+  "name": "rhythm-chain-game",
+  "version": "0.1.0",
+  "description": "A browser rhythm-chain game with 30 progressively harder rhythm levels.",
+  "type": "module",
+  "license": "MIT",
+  "author": "eddietsai6-code",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eddietsai6-code/rhythm-chain-game.git"
+  },
+  "homepage": "https://rhythm-chain-game.pages.dev/",
+  "scripts": {
+    "serve": "python -m http.server 4196 --bind 127.0.0.1",
+    "test": "node --test tests/rhythm-core.test.mjs"
+  },
+  "keywords": [
+    "rhythm",
+    "music-game",
+    "web-audio",
+    "music-education"
+  ]
+}

@@ -1,0 +1,458 @@
+export const LEVEL_COUNT = 30;
+const MIN_COMBO_COUNT = 4;
+const MAX_COMBO_COUNT = 16;
+const DEFAULT_BPM = 88;
+
+function deepFreeze(value) {
+  if (Array.isArray(value)) {
+    value.forEach(deepFreeze);
+  } else if (value && typeof value === "object") {
+    Object.values(value).forEach(deepFreeze);
+  }
+
+  return Object.freeze(value);
+}
+
+function hit(at, tone = "stick", velocity = 0.82, duration = 0.08) {
+  return { at, tone, velocity, duration };
+}
+
+const PATTERN_DEFINITIONS = [
+  {
+    id: "quarter",
+    label: "Quarter",
+    name: "四分音符",
+    symbol: "♩",
+    family: "basic",
+    color: "red",
+    unlockLevel: 1,
+    difficulty: 1,
+    beats: 1,
+    syllables: "TA",
+    description: "One clear hit on the beat.",
+    hits: [hit(0, "kick", 0.92, 0.16)],
+  },
+  {
+    id: "twoEighths",
+    label: "Two eighths",
+    name: "两个八分音符",
+    symbol: "♫",
+    family: "basic",
+    color: "green",
+    unlockLevel: 1,
+    difficulty: 1,
+    beats: 1,
+    syllables: "TA-KA",
+    description: "Two even sounds inside one beat.",
+    hits: [hit(0), hit(0.5, "wood", 0.72)],
+  },
+  {
+    id: "quarterRest",
+    label: "Quarter rest",
+    name: "四分休止",
+    symbol: "𝄽",
+    family: "rests",
+    color: "black",
+    unlockLevel: 1,
+    difficulty: 1,
+    beats: 1,
+    syllables: "shh",
+    description: "A silent rhythm card; the beat pulse still sounds.",
+    hits: [],
+  },
+  {
+    id: "eighthRestEighth",
+    label: "Eighth rest + eighth",
+    name: "八分休止后八分",
+    symbol: "𝄾♪",
+    family: "rests",
+    color: "silver",
+    unlockLevel: 1,
+    difficulty: 2,
+    beats: 1,
+    syllables: "shh-KA",
+    description: "Wait for the offbeat, then play.",
+    hits: [hit(0.5, "wood", 0.84)],
+  },
+  {
+    id: "eighthEighthRest",
+    label: "Eighth + eighth rest",
+    name: "八分后八分休止",
+    symbol: "♪𝄾",
+    family: "rests",
+    color: "silver",
+    unlockLevel: 4,
+    difficulty: 2,
+    beats: 1,
+    syllables: "TA-shh",
+    description: "Play first, leave the offbeat empty.",
+    hits: [hit(0, "wood", 0.84)],
+  },
+  {
+    id: "fourSixteenths",
+    label: "Four sixteenths",
+    name: "四个十六分音符",
+    symbol: "♬",
+    family: "division",
+    color: "blue",
+    unlockLevel: 7,
+    difficulty: 3,
+    beats: 1,
+    syllables: "TA-KA-DI-MI",
+    description: "Four fast, even subdivisions.",
+    hits: [hit(0), hit(0.25, "wood", 0.7), hit(0.5, "stick", 0.74), hit(0.75, "wood", 0.68)],
+  },
+  {
+    id: "twoSixteenthsEighth",
+    label: "Two sixteenths + eighth",
+    name: "十六十六八",
+    symbol: "♬♪",
+    family: "division",
+    color: "blue",
+    unlockLevel: 8,
+    difficulty: 3,
+    beats: 1,
+    syllables: "TA-KA-DI",
+    description: "Quick start, then a longer second half.",
+    hits: [hit(0), hit(0.25, "wood", 0.72), hit(0.5, "stick", 0.82, 0.14)],
+  },
+  {
+    id: "eighthTwoSixteenths",
+    label: "Eighth + two sixteenths",
+    name: "八十六十六",
+    symbol: "♪♬",
+    family: "division",
+    color: "green",
+    unlockLevel: 9,
+    difficulty: 3,
+    beats: 1,
+    syllables: "TA-DI-MI",
+    description: "A held first half followed by two faster notes.",
+    hits: [hit(0, "stick", 0.84, 0.14), hit(0.5, "wood", 0.72), hit(0.75, "stick", 0.74)],
+  },
+  {
+    id: "dottedEighthSixteenth",
+    label: "Dotted eighth + sixteenth",
+    name: "附点八分加十六分",
+    symbol: "♪.♬",
+    family: "dotted",
+    color: "gold",
+    unlockLevel: 11,
+    difficulty: 4,
+    beats: 1,
+    syllables: "TA--MI",
+    description: "A long front note snapped by a late sixteenth.",
+    hits: [hit(0, "kick", 0.9, 0.22), hit(0.75, "wood", 0.82)],
+  },
+  {
+    id: "sixteenthDottedEighth",
+    label: "Sixteenth + dotted eighth",
+    name: "十六分加附点八分",
+    symbol: "♬♪.",
+    family: "dotted",
+    color: "gold",
+    unlockLevel: 12,
+    difficulty: 4,
+    beats: 1,
+    syllables: "TA-KA--",
+    description: "A tiny pickup into a longer sound.",
+    hits: [hit(0, "wood", 0.78), hit(0.25, "kick", 0.9, 0.22)],
+  },
+  {
+    id: "eighthRestTwoSixteenths",
+    label: "Eighth rest + two sixteenths",
+    name: "八分休止接两个十六分",
+    symbol: "𝄾♬",
+    family: "rests",
+    color: "silver",
+    unlockLevel: 14,
+    difficulty: 4,
+    beats: 1,
+    syllables: "shh-DI-MI",
+    description: "Hold the first half, then answer quickly.",
+    hits: [hit(0.5, "wood", 0.76), hit(0.75, "stick", 0.78)],
+  },
+  {
+    id: "dottedQuarterEighth",
+    label: "Dotted quarter + eighth",
+    name: "附点四分加八分",
+    symbol: "♩.♪",
+    family: "dotted",
+    color: "orange",
+    unlockLevel: 16,
+    difficulty: 5,
+    beats: 2,
+    syllables: "TA---KA",
+    description: "A two-beat card with a late answer.",
+    hits: [hit(0, "kick", 0.94, 0.38), hit(1.5, "wood", 0.82, 0.12)],
+  },
+  {
+    id: "triplet",
+    label: "Triplet",
+    name: "三连音",
+    symbol: "♩♩♩",
+    family: "triplet",
+    color: "lime",
+    unlockLevel: 19,
+    difficulty: 6,
+    beats: 1,
+    syllables: "TRI-PL-ET",
+    description: "Three evenly spaced sounds over one beat.",
+    hits: [hit(0, "stick", 0.84), hit(1 / 3, "wood", 0.73), hit(2 / 3, "stick", 0.76)],
+  },
+  {
+    id: "sixteenthRestRun",
+    label: "Sixteenth rest run",
+    name: "十六分休止跑动",
+    symbol: "𝄿♬♬",
+    family: "rests",
+    color: "silver",
+    unlockLevel: 21,
+    difficulty: 6,
+    beats: 1,
+    syllables: "shh-KA-DI-MI",
+    description: "Skip the downbeat and rush through the rest.",
+    hits: [hit(0.25, "wood", 0.76), hit(0.5, "stick", 0.78), hit(0.75, "wood", 0.72)],
+  },
+  {
+    id: "offbeatEighths",
+    label: "Offbeat eighths",
+    name: "后半拍八分",
+    symbol: "♪ ♪",
+    family: "syncopation",
+    color: "violet",
+    unlockLevel: 23,
+    difficulty: 7,
+    beats: 1,
+    syllables: "-KA-DA",
+    description: "Lean into the offbeat without a downbeat note.",
+    hits: [hit(0.5, "clap", 0.9), hit(0.75, "wood", 0.68)],
+  },
+  {
+    id: "syncopatedTie",
+    label: "Syncopated tie",
+    name: "切分连线",
+    symbol: "♪—♪",
+    family: "syncopation",
+    color: "violet",
+    unlockLevel: 25,
+    difficulty: 8,
+    beats: 2,
+    syllables: "-KA---TA",
+    description: "A tied offbeat pushes across the bar line.",
+    hits: [hit(0.5, "clap", 0.92, 0.42), hit(1.5, "kick", 0.86)],
+  },
+  {
+    id: "mixedSixteenthRest",
+    label: "Mixed sixteenth rests",
+    name: "混合十六分休止",
+    symbol: "♬𝄿♬",
+    family: "rests",
+    color: "black",
+    unlockLevel: 27,
+    difficulty: 8,
+    beats: 1,
+    syllables: "TA-shh-DI-MI",
+    description: "A gap inside a fast subdivision group.",
+    hits: [hit(0, "stick", 0.84), hit(0.5, "wood", 0.8), hit(0.75, "stick", 0.74)],
+  },
+  {
+    id: "anticipation",
+    label: "Anticipation",
+    name: "提前进入",
+    symbol: "♬—♩",
+    family: "syncopation",
+    color: "violet",
+    unlockLevel: 29,
+    difficulty: 9,
+    beats: 2,
+    syllables: "TA-KA--TA",
+    description: "A sixteenth pickup locks into the next beat.",
+    hits: [hit(0, "wood", 0.76), hit(0.25, "stick", 0.76), hit(1, "kick", 0.94, 0.22)],
+  },
+];
+
+export const RHYTHM_PATTERNS = deepFreeze(PATTERN_DEFINITIONS.map((pattern) => ({ ...pattern })));
+const PATTERN_BY_ID = new Map(RHYTHM_PATTERNS.map((pattern) => [pattern.id, pattern]));
+const LEVELS = deepFreeze(createLevels());
+
+export function buildLevels() {
+  return LEVELS.map((level) => ({ ...level }));
+}
+
+export function getLevelConfig(levelNumber) {
+  const level = Math.min(LEVEL_COUNT, Math.max(1, Math.trunc(Number(levelNumber) || 1)));
+  return { ...LEVELS[level - 1] };
+}
+
+export function getUnlockedPatterns(levelOrConfig) {
+  const level = typeof levelOrConfig === "object" ? levelOrConfig.level : levelOrConfig;
+  const levelNumber = getLevelConfig(level).level;
+
+  return RHYTHM_PATTERNS.filter((pattern) => pattern.unlockLevel <= levelNumber);
+}
+
+export function createTargetChain(levelConfig, options = {}) {
+  const config = typeof levelConfig === "number" ? getLevelConfig(levelConfig) : levelConfig;
+  const pool = getUnlockedPatterns(config).filter(
+    (pattern) => pattern.difficulty <= config.maxPatternDifficulty
+  );
+  const random = options.random || seededRandom(config.seed);
+  const chain = [];
+
+  for (let index = 0; index < config.comboCount; index += 1) {
+    const previousPattern = chain.length > 0 ? getPatternById(chain.at(-1)) : null;
+    const filteredPool =
+      previousPattern?.family === "rests"
+        ? pool.filter((pattern) => pattern.family !== "rests")
+        : pool;
+    const selected = chooseWeightedPattern(filteredPool, random, config.level, index);
+    chain.push(selected.id);
+  }
+
+  return chain;
+}
+
+export function scheduleChainEvents(chain, options = {}) {
+  const bpm = Number(options.bpm) > 0 ? Number(options.bpm) : DEFAULT_BPM;
+  const startTime = Number(options.startTime) || 0;
+  const beatDuration = 60 / bpm;
+  const events = [];
+  let beatCursor = 0;
+
+  chain.forEach((patternId, comboIndex) => {
+    const pattern = getPatternById(patternId);
+
+    for (let beatOffset = 0; beatOffset < pattern.beats; beatOffset += 1) {
+      const beat = beatCursor + beatOffset;
+      events.push({
+        kind: "pulse",
+        audible: true,
+        patternId,
+        comboIndex,
+        beat,
+        timeSeconds: startTime + beat * beatDuration,
+        durationSeconds: Math.min(0.055, beatDuration * 0.12),
+        velocity: beatOffset === 0 ? 0.42 : 0.34,
+        tone: beatOffset === 0 ? "pulse" : "subPulse",
+      });
+    }
+
+    pattern.hits.forEach((patternHit) => {
+      const beat = beatCursor + patternHit.at;
+      events.push({
+        kind: "note",
+        audible: true,
+        patternId,
+        comboIndex,
+        beat,
+        timeSeconds: startTime + beat * beatDuration,
+        durationSeconds: Math.max(0.035, patternHit.duration * beatDuration),
+        velocity: patternHit.velocity,
+        tone: patternHit.tone,
+      });
+    });
+
+    beatCursor += pattern.beats;
+  });
+
+  return events.sort((first, second) => {
+    if (first.timeSeconds !== second.timeSeconds) {
+      return first.timeSeconds - second.timeSeconds;
+    }
+    if (first.kind === second.kind) {
+      return 0;
+    }
+    return first.kind === "pulse" ? -1 : 1;
+  });
+}
+
+export function getPatternById(patternId) {
+  const pattern = PATTERN_BY_ID.get(patternId);
+  if (!pattern) {
+    throw new Error(`Unknown rhythm pattern: ${patternId}`);
+  }
+
+  return pattern;
+}
+
+export function calculateChainBeats(chain) {
+  return chain.reduce((total, patternId) => total + getPatternById(patternId).beats, 0);
+}
+
+export function evaluatePlayerChain(targetChain, playerChain) {
+  const total = targetChain.length;
+  const mismatches = [];
+  let matched = 0;
+
+  for (let index = 0; index < total; index += 1) {
+    const expected = targetChain[index];
+    const actual = playerChain[index] ?? null;
+
+    if (actual === expected) {
+      matched += 1;
+    } else {
+      mismatches.push({ index, expected, actual });
+    }
+  }
+
+  return {
+    passed: mismatches.length === 0 && playerChain.length === targetChain.length,
+    matched,
+    total,
+    accuracy: total === 0 ? 1 : Number((matched / total).toFixed(3)),
+    mismatches,
+  };
+}
+
+export function getComboCountForLevel(levelNumber) {
+  const zeroBasedLevel = levelNumber - 1;
+  const growth = zeroBasedLevel / (LEVEL_COUNT - 1);
+  return MIN_COMBO_COUNT + Math.round(growth * (MAX_COMBO_COUNT - MIN_COMBO_COUNT));
+}
+
+function createLevels() {
+  return Array.from({ length: LEVEL_COUNT }, (_, index) => {
+    const level = index + 1;
+    const comboCount = getComboCountForLevel(level);
+    return {
+      level,
+      comboCount,
+      bpm: 78 + Math.round(index * 2.05),
+      maxPatternDifficulty: Math.min(9, 1 + Math.floor(index / 3)),
+      targetStars: Math.max(6, comboCount + Math.floor(level / 5)),
+      seed: 9137 + level * 7919,
+    };
+  });
+}
+
+function seededRandom(seed) {
+  let value = seed >>> 0;
+  return () => {
+    value += 0x6d2b79f5;
+    let result = value;
+    result = Math.imul(result ^ (result >>> 15), result | 1);
+    result ^= result + Math.imul(result ^ (result >>> 7), result | 61);
+    return ((result ^ (result >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function chooseWeightedPattern(pool, random, level, comboIndex) {
+  const weighted = pool.map((pattern) => {
+    const lateUnlockBoost = Math.max(0, level - pattern.unlockLevel) * 0.04;
+    const complexityNudge = comboIndex % 4 === 3 ? pattern.difficulty * 0.08 : 0;
+    const weight = 1 + lateUnlockBoost + complexityNudge;
+    return { pattern, weight };
+  });
+  const totalWeight = weighted.reduce((sum, item) => sum + item.weight, 0);
+  let cursor = random() * totalWeight;
+
+  for (const item of weighted) {
+    cursor -= item.weight;
+    if (cursor <= 0) {
+      return item.pattern;
+    }
+  }
+
+  return weighted.at(-1).pattern;
+}

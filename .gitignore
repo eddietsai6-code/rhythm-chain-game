@@ -1,0 +1,10 @@
+node_modules/
+dist/
+output/
+tmp/
+*.log
+*.err.log
+.env
+.env.*
+.DS_Store
+Thumbs.db
