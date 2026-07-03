@@ -78,3 +78,19 @@ test("rest symbols render with app-native glyphs instead of mobile-unsafe text",
   assert.match(css, /\.rest-glyph\s*{/);
   assert.match(css, /\.note-symbol \.symbol-text\s*{/);
 });
+
+test("four sixteenths render as one connected notation glyph", () => {
+  assert.match(appJs, /pattern\.glyph === "four-sixteenth-run"/);
+  assert.match(appJs, /symbol\.append\(createFourSixteenthGlyph\(\)\)/);
+  assert.match(appJs, /function createFourSixteenthGlyph\(\)/);
+  assert.match(css, /\.four-sixteenth-glyph\s*{/);
+});
+
+test("beat dots drive a four-count audible prep interaction before playback", () => {
+  assert.match(appJs, /scheduleCountInEvents/);
+  assert.match(appJs, /beatDots:\s*document\.querySelectorAll\("\.beat-dots span"\)/);
+  assert.match(appJs, /scheduleCountInHighlights\(countInEvents\)/);
+  assert.match(appJs, /function scheduleCountInHighlights\(countInEvents\)/);
+  assert.match(appJs, /function clearCountInDots\(\)/);
+  assert.match(css, /\.beat-dots span\.active\s*{/);
+});

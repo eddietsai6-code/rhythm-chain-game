@@ -20,6 +20,7 @@ export const SPEED_OPTIONS = deepFreeze([
 const MIN_COMBO_COUNT = 4;
 const MAX_COMBO_COUNT = 16;
 const DEFAULT_BPM = 88;
+export const COUNT_IN_BEATS = 4;
 
 function deepFreeze(value) {
   if (Array.isArray(value)) {
@@ -111,6 +112,7 @@ const PATTERN_DEFINITIONS = [
     label: "Four sixteenths",
     name: "四个十六分音符",
     symbol: "♬♬",
+    glyph: "four-sixteenth-run",
     family: "division",
     color: "blue",
     unlockLevel: 7,
@@ -383,6 +385,24 @@ export function scheduleChainEvents(chain, options = {}) {
     }
     return first.kind === "pulse" ? -1 : 1;
   });
+}
+
+export function scheduleCountInEvents(options = {}) {
+  const bpm = Number(options.bpm) > 0 ? Number(options.bpm) : DEFAULT_BPM;
+  const startTime = Number(options.startTime) || 0;
+  const beatDuration = 60 / bpm;
+
+  return Array.from({ length: COUNT_IN_BEATS }, (_, countIndex) => ({
+    kind: "countIn",
+    audible: true,
+    countIndex,
+    beat: countIndex,
+    timeSeconds: startTime + countIndex * beatDuration,
+    durationSeconds: Math.min(0.08, beatDuration * 0.16),
+    velocity: countIndex === COUNT_IN_BEATS - 1 ? 0.96 : 0.72,
+    accent: countIndex === COUNT_IN_BEATS - 1,
+    tone: SNARE_TONE,
+  }));
 }
 
 export function resolvePlaybackBpm(baseBpm, speedMultiplier = 1) {

@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  COUNT_IN_BEATS,
   LEVEL_COUNT,
   SOUND_PRESETS,
   SNARE_TONE,
@@ -17,6 +18,7 @@ import {
   getUnlockedPatterns,
   resolvePlaybackBpm,
   scheduleChainEvents,
+  scheduleCountInEvents,
 } from "../assets/rhythm-core.js";
 
 test("buildLevels creates 30 levels that grow from 4 to 16 rhythm combinations", () => {
@@ -99,7 +101,7 @@ test("rest-only cards stay silent during playback", () => {
 });
 
 test("four sixteenth notes schedule exactly four audible subdivisions", () => {
-  assert.equal(getPatternById("fourSixteenths").symbol, "♬♬");
+  assert.equal(getPatternById("fourSixteenths").glyph, "four-sixteenth-run");
 
   const audibleEvents = scheduleChainEvents(["fourSixteenths"], { bpm: 96 })
     .filter((event) => event.audible)
@@ -111,6 +113,33 @@ test("four sixteenth notes schedule exactly four audible subdivisions", () => {
     { kind: "note", beat: 0.5 },
     { kind: "note", beat: 0.75 },
   ]);
+});
+
+test("count-in schedules four audible prep beats before playback", () => {
+  const bpm = 120;
+  const beatDuration = 60 / bpm;
+  const countInEvents = scheduleCountInEvents({ bpm, startTime: 10 });
+  const chainEvents = scheduleChainEvents(["quarter"], {
+    bpm,
+    startTime: 10 + COUNT_IN_BEATS * beatDuration,
+  });
+
+  assert.equal(COUNT_IN_BEATS, 4);
+  assert.deepEqual(
+    countInEvents.map((event) => ({
+      kind: event.kind,
+      audible: event.audible,
+      countIndex: event.countIndex,
+      timeSeconds: event.timeSeconds,
+    })),
+    [
+      { kind: "countIn", audible: true, countIndex: 0, timeSeconds: 10 },
+      { kind: "countIn", audible: true, countIndex: 1, timeSeconds: 10.5 },
+      { kind: "countIn", audible: true, countIndex: 2, timeSeconds: 11 },
+      { kind: "countIn", audible: true, countIndex: 3, timeSeconds: 11.5 },
+    ]
+  );
+  assert.equal(chainEvents[0].timeSeconds, 12);
 });
 
 test("getPatternById returns immutable pattern definitions", () => {

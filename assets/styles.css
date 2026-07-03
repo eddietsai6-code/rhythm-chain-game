@@ -117,6 +117,14 @@ h1 {
   border-radius: 50%;
   background: var(--blue-dot);
   box-shadow: inset -5px -8px 0 rgba(0, 0, 0, 0.08), 0 3px 7px rgba(0, 0, 0, 0.18);
+  transform: translateY(0) scale(1);
+  transition: transform 90ms ease, background 90ms ease, box-shadow 90ms ease;
+}
+
+.beat-dots span.active {
+  background: #16c875;
+  transform: translateY(-3px) scale(1.13);
+  box-shadow: inset -5px -8px 0 rgba(0, 0, 0, 0.1), 0 6px 14px rgba(22, 200, 117, 0.28);
 }
 
 .stage-panel,
@@ -365,6 +373,14 @@ h1 {
 .eighth-rest-glyph,
 .sixteenth-rest-glyph {
   width: 0.78em;
+}
+
+.four-sixteenth-glyph {
+  width: 1.72em;
+  height: 1em;
+  flex: 0 0 auto;
+  color: currentColor;
+  overflow: visible;
 }
 
 .rhythm-card.dense-rhythm .note-symbol {

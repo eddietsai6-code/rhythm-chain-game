@@ -1,4 +1,5 @@
 import {
+  COUNT_IN_BEATS,
   DEFAULT_SOUND_ID,
   LEVEL_COUNT,
   SOUND_PRESETS,
@@ -12,6 +13,7 @@ import {
   getUnlockedPatterns,
   resolvePlaybackBpm,
   scheduleChainEvents,
+  scheduleCountInEvents,
 } from "./rhythm-core.js";
 
 const storageKey = "rhythm-chain-game-progress-v1";
@@ -24,6 +26,7 @@ const selectors = {
   beatReadout: document.querySelector("#beatReadout"),
   accuracyReadout: document.querySelector("#accuracyReadout"),
   levelList: document.querySelector("#levelList"),
+  beatDots: document.querySelectorAll(".beat-dots span"),
   targetChain: document.querySelector("#targetChain"),
   playerChain: document.querySelector("#playerChain"),
   slotPicker: document.querySelector("#slotPicker"),
@@ -358,6 +361,11 @@ function createPatternTile(pattern, options = {}) {
 }
 
 function appendSymbolNodes(symbol, pattern) {
+  if (pattern.glyph === "four-sixteenth-run") {
+    symbol.append(createFourSixteenthGlyph());
+    return;
+  }
+
   Array.from(pattern.symbol).forEach((char) => {
     if (REST_SYMBOLS.has(char)) {
       symbol.append(createRestGlyph(char));
@@ -369,6 +377,88 @@ function appendSymbolNodes(symbol, pattern) {
     text.textContent = char;
     symbol.append(text);
   });
+}
+
+function createFourSixteenthGlyph() {
+  const svg = document.createElementNS(svgNamespace, "svg");
+  svg.classList.add("four-sixteenth-glyph");
+  svg.setAttribute("viewBox", "0 0 104 64");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+
+  svg.append(
+    createSvgElement("path", { d: "M25 12 L95 12 L95 19 L25 19 Z", fill: "currentColor" }),
+    createSvgElement("path", { d: "M25 25 L95 25 L95 32 L25 32 Z", fill: "currentColor" }),
+    createSvgElement("line", {
+      x1: "25",
+      y1: "16",
+      x2: "25",
+      y2: "49",
+      stroke: "currentColor",
+      "stroke-width": "5",
+      "stroke-linecap": "round",
+    }),
+    createSvgElement("line", {
+      x1: "48",
+      y1: "16",
+      x2: "48",
+      y2: "49",
+      stroke: "currentColor",
+      "stroke-width": "5",
+      "stroke-linecap": "round",
+    }),
+    createSvgElement("line", {
+      x1: "71",
+      y1: "16",
+      x2: "71",
+      y2: "49",
+      stroke: "currentColor",
+      "stroke-width": "5",
+      "stroke-linecap": "round",
+    }),
+    createSvgElement("line", {
+      x1: "94",
+      y1: "16",
+      x2: "94",
+      y2: "49",
+      stroke: "currentColor",
+      "stroke-width": "5",
+      "stroke-linecap": "round",
+    }),
+    createSvgElement("ellipse", {
+      cx: "17",
+      cy: "50",
+      rx: "9",
+      ry: "6",
+      fill: "currentColor",
+      transform: "rotate(-18 17 50)",
+    }),
+    createSvgElement("ellipse", {
+      cx: "40",
+      cy: "50",
+      rx: "9",
+      ry: "6",
+      fill: "currentColor",
+      transform: "rotate(-18 40 50)",
+    }),
+    createSvgElement("ellipse", {
+      cx: "63",
+      cy: "50",
+      rx: "9",
+      ry: "6",
+      fill: "currentColor",
+      transform: "rotate(-18 63 50)",
+    }),
+    createSvgElement("ellipse", {
+      cx: "86",
+      cy: "50",
+      rx: "9",
+      ry: "6",
+      fill: "currentColor",
+      transform: "rotate(-18 86 50)",
+    })
+  );
+  return svg;
 }
 
 function createRestGlyph(restSymbol) {
@@ -509,15 +599,29 @@ async function playChain(kind) {
 
   clearPlayback();
   const audioContext = await getAudioContext();
-  const startTime = audioContext.currentTime + 0.08;
+  const bpm = getPlaybackBpm();
+  const beatDuration = 60 / bpm;
+  const countInStartTime = audioContext.currentTime + 0.08;
+  const countInEvents = scheduleCountInEvents({
+    bpm,
+    startTime: countInStartTime,
+  });
+  const startTime = countInStartTime + COUNT_IN_BEATS * beatDuration;
   const events = scheduleChainEvents(chain, {
-    bpm: getPlaybackBpm(),
+    bpm,
     startTime,
   });
 
+  countInEvents.forEach((event) => scheduleAudioEvent(audioContext, event));
   events.forEach((event) => scheduleAudioEvent(audioContext, event));
+  scheduleCountInHighlights(countInEvents);
   scheduleHighlights(events, kind, startTime);
-  setStatus(kind === "target" ? "正在播放目标" : "正在播放链条", "playing");
+  setStatus("预备", "playing");
+  state.playbackTimers.push(
+    window.setTimeout(() => {
+      setStatus(kind === "target" ? "正在播放目标" : "正在播放链条", "playing");
+    }, Math.max(0, (startTime - audioContext.currentTime) * 1000))
+  );
 }
 
 async function playPreview(patternId) {
@@ -584,7 +688,7 @@ function scheduleAudioEvent(audioContext, event) {
     start: event.timeSeconds,
     duration: event.kind === "pulse" ? 0.045 : event.durationSeconds,
     velocity: event.kind === "pulse" ? event.velocity * 0.55 : event.velocity,
-    accent: event.kind === "note",
+    accent: event.kind === "note" || event.accent === true,
   });
 }
 
@@ -768,9 +872,27 @@ function scheduleHighlights(events, kind, startTime) {
       renderChain(selectors.targetChain, state.targetChain, "target");
       renderPlayerChain();
       clearDeckHighlight();
+      clearCountInDots();
       setStatus("准备", "idle");
     }, endDelay)
   );
+}
+
+function scheduleCountInHighlights(countInEvents) {
+  const audioContext = state.audioContext;
+  countInEvents.forEach((event) => {
+    const delay = Math.max(0, (event.timeSeconds - audioContext.currentTime) * 1000);
+    state.playbackTimers.push(
+      window.setTimeout(() => {
+        clearCountInDots();
+        selectors.beatDots[event.countIndex]?.classList.add("active");
+      }, delay)
+    );
+  });
+}
+
+function clearCountInDots() {
+  selectors.beatDots.forEach((dot) => dot.classList.remove("active"));
 }
 
 function highlightDeckCard(patternId) {
@@ -796,6 +918,7 @@ function clearPlayback() {
   state.audioNodes = [];
   state.activeTargetIndex = null;
   state.activePlayerIndex = null;
+  clearCountInDots();
   clearDeckHighlight();
 }
 
