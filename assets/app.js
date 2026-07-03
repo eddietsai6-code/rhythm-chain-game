@@ -34,8 +34,8 @@ const selectors = {
   playerBeatCount: document.querySelector("#playerBeatCount"),
   statusText: document.querySelector("#statusText"),
   drillLabel: document.querySelector("#drillLabel"),
+  prevLevelButton: document.querySelector("#prevLevelButton"),
   nextLevelButton: document.querySelector("#nextLevelButton"),
-  nextLevelLabel: document.querySelector("#nextLevelLabel"),
   libraryCount: document.querySelector("#libraryCount"),
   patternLibrary: document.querySelector("#patternLibrary"),
   playTargetButton: document.querySelector("#playTargetButton"),
@@ -110,6 +110,7 @@ function bindControls() {
   selectors.checkButton.addEventListener("click", checkPlayerChain);
   selectors.undoButton.addEventListener("click", undoLastCard);
   selectors.clearButton.addEventListener("click", clearPlayerChain);
+  selectors.prevLevelButton.addEventListener("click", () => goToPreviousLevel());
   selectors.nextLevelButton.addEventListener("click", () => goToNextLevel());
   selectors.nextButton.addEventListener("click", () => goToNextLevel());
   selectors.previewDeckButton.addEventListener("click", previewDeck);
@@ -209,7 +210,7 @@ function renderReadouts() {
   selectors.targetBeatCount.textContent = `${targetBeats} 拍`;
   selectors.playerBeatCount.textContent = `${playerBeats} 拍`;
   selectors.drillLabel.textContent = `关卡 ${state.level}`;
-  selectors.nextLevelLabel.textContent = state.level < LEVEL_COUNT ? `关卡 ${state.level + 1}` : "完成";
+  selectors.prevLevelButton.disabled = state.level <= 1;
   selectors.nextLevelButton.disabled = state.level >= LEVEL_COUNT;
 }
 
@@ -457,6 +458,15 @@ function clearPlayerChain() {
   closeSlotPicker();
   render();
   setStatus("已清空", "idle");
+}
+
+function goToPreviousLevel() {
+  if (state.level <= 1) {
+    setStatus("已经是第一关", "warn");
+    return;
+  }
+
+  loadLevel(state.level - 1);
 }
 
 function goToNextLevel() {

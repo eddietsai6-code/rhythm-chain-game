@@ -32,12 +32,19 @@ test("rhythm picker fills the selected slot instead of auto-filling the target",
   assert.doesNotMatch(appJs, /const targetPattern = state\.targetChain\[index\]/);
 });
 
-test("drill footer exposes a visible next-level button", () => {
+test("drill footer exposes compact previous and next level buttons", () => {
+  assert.match(html, /id="prevLevelButton"/);
   assert.match(html, /id="nextLevelButton"/);
-  assert.match(html, /aria-label="进入下一关"/);
+  assert.match(html, />UP</);
+  assert.match(html, />NEXT</);
+  assert.match(appJs, /prevLevelButton:\s*document\.querySelector\("#prevLevelButton"\)/);
   assert.match(appJs, /nextLevelButton:\s*document\.querySelector\("#nextLevelButton"\)/);
+  assert.match(appJs, /selectors\.prevLevelButton\.addEventListener\("click",\s*\(\)\s*=>\s*goToPreviousLevel\(\)\)/);
   assert.match(appJs, /selectors\.nextLevelButton\.addEventListener\("click",\s*\(\)\s*=>\s*goToNextLevel\(\)\)/);
+  assert.match(appJs, /function goToPreviousLevel\(\)/);
   assert.match(appJs, /function goToNextLevel\(\)/);
+  assert.match(css, /\.drill-progress\s*{[^}]*grid-template-columns:\s*70px minmax\(0,\s*1fr\) 70px/s);
+  assert.match(css, /\.level-nav-button\s*{[^}]*width:\s*64px/s);
 });
 
 test("main game keeps one app-style viewport across desktop tablet and phone", () => {
