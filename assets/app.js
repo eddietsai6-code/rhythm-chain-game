@@ -24,6 +24,10 @@ const selectors = {
   levelList: document.querySelector("#levelList"),
   targetChain: document.querySelector("#targetChain"),
   playerChain: document.querySelector("#playerChain"),
+  slotPicker: document.querySelector("#slotPicker"),
+  slotPickerTitle: document.querySelector("#slotPickerTitle"),
+  slotPickerGrid: document.querySelector("#slotPickerGrid"),
+  closeSlotPickerButton: document.querySelector("#closeSlotPickerButton"),
   targetBeatCount: document.querySelector("#targetBeatCount"),
   playerBeatCount: document.querySelector("#playerBeatCount"),
   statusText: document.querySelector("#statusText"),
@@ -53,6 +57,7 @@ const state = {
   speedId: resolveSpeedId(progress.speedId),
   tapTracker: createTapTempoTracker({ windowSize: 4 }),
   tapBpm: null,
+  selectedSlotIndex: null,
   activeTargetIndex: null,
   activePlayerIndex: null,
   mismatches: new Set(),
@@ -95,6 +100,7 @@ function bindControls() {
   selectors.speedSelect.addEventListener("change", handleSpeedChange);
   selectors.playControlButton.addEventListener("click", () => playChain("target"));
   selectors.tapButton.addEventListener("click", handleTap);
+  selectors.closeSlotPickerButton.addEventListener("click", closeSlotPicker);
   selectors.playTargetButton.addEventListener("click", () => playChain("target"));
   selectors.playPlayerButton.addEventListener("click", () => playChain("player"));
   selectors.checkButton.addEventListener("click", checkPlayerChain);
@@ -143,6 +149,8 @@ function loadLevel(levelNumber) {
   state.targetChain = createTargetChain(state.config);
   state.playerChain = [];
   state.tapBpm = null;
+  state.selectedSlotIndex = null;
+  closeSlotPicker();
   state.tapTracker.reset();
   selectors.tapTempoLabel.textContent = "-- BPM";
   state.activeTargetIndex = null;
@@ -161,6 +169,7 @@ function render() {
   renderChain(selectors.targetChain, state.targetChain, "target");
   renderPlayerChain();
   renderLibrary();
+  renderSlotPicker();
 }
 
 function renderLevelList() {
@@ -182,13 +191,14 @@ function renderLevelList() {
 
 function renderReadouts() {
   const targetBeats = calculateChainBeats(state.targetChain);
-  const playerBeats = calculateChainBeats(state.playerChain);
+  const filledPlayerPatterns = getFilledPlayerPatterns();
+  const playerBeats = calculateChainBeats(filledPlayerPatterns);
   const accuracy = state.lastResult ? `${Math.round(state.lastResult.accuracy * 100)}%` : "0%";
   const bpm = getPlaybackBpm();
 
   selectors.levelTitle.textContent = `第 ${state.level} / ${LEVEL_COUNT} 关`;
   selectors.levelMeta.textContent = `${state.config.comboCount} 组合 / ${bpm} BPM`;
-  selectors.comboReadout.textContent = `${state.playerChain.length} / ${state.config.comboCount}`;
+  selectors.comboReadout.textContent = `${filledPlayerPatterns.length} / ${state.config.comboCount}`;
   selectors.beatReadout.textContent = String(targetBeats);
   selectors.accuracyReadout.textContent = accuracy;
   selectors.targetBeatCount.textContent = `${targetBeats} 拍`;
@@ -227,10 +237,7 @@ function renderPlayerChain() {
       empty.type = "button";
       empty.textContent = "+";
       empty.title = `Slot ${index + 1}`;
-      empty.addEventListener("click", () => {
-        const targetPattern = state.targetChain[index] || state.targetChain[state.playerChain.length];
-        if (targetPattern) addPattern(targetPattern);
-      });
+      empty.addEventListener("click", () => openSlotPicker(index));
       return empty;
     }
 
@@ -241,13 +248,8 @@ function renderPlayerChain() {
     });
     tile.classList.add("player-tile");
     if (state.mismatches.has(index)) tile.classList.add("mismatch");
-    tile.title = "移除这个节奏";
-    tile.addEventListener("click", () => {
-      state.playerChain.splice(index, 1);
-      state.lastResult = null;
-      state.mismatches = new Set();
-      render();
-    });
+    tile.title = "重新选择这个节奏";
+    tile.addEventListener("click", () => openSlotPicker(index));
     return tile;
   });
 
@@ -262,10 +264,57 @@ function renderLibrary() {
     ...unlockedPatterns.map((pattern) => {
       const tile = createPatternTile(pattern, { compact: false });
       tile.addEventListener("click", () => addPattern(pattern.id));
-      tile.disabled = state.playerChain.length >= state.config.comboCount;
+      tile.disabled = getFilledPlayerPatterns().length >= state.config.comboCount;
       return tile;
     })
   );
+}
+
+function renderSlotPicker() {
+  if (state.selectedSlotIndex === null) {
+    selectors.slotPicker.hidden = true;
+    return;
+  }
+
+  const currentPatternId = state.playerChain[state.selectedSlotIndex] || null;
+  selectors.slotPicker.hidden = false;
+  selectors.slotPickerTitle.textContent = `选择第 ${state.selectedSlotIndex + 1} 格节拍`;
+  selectors.slotPickerGrid.replaceChildren(
+    ...getUnlockedPatterns(state.config).map((pattern) => {
+      const tile = createPatternTile(pattern, { compact: true });
+      tile.classList.add("slot-picker-card");
+      if (pattern.id === currentPatternId) tile.classList.add("selected");
+      tile.addEventListener("click", () => setSlotPattern(state.selectedSlotIndex, pattern.id));
+      return tile;
+    })
+  );
+}
+
+function openSlotPicker(slotIndex) {
+  state.selectedSlotIndex = Math.min(state.config.comboCount - 1, Math.max(0, Number(slotIndex) || 0));
+  renderSlotPicker();
+  setStatus(`选择第 ${state.selectedSlotIndex + 1} 格`, "idle");
+  selectors.slotPicker.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
+function closeSlotPicker() {
+  state.selectedSlotIndex = null;
+  selectors.slotPicker.hidden = true;
+  selectors.slotPickerGrid.replaceChildren();
+}
+
+function setSlotPattern(slotIndex, patternId) {
+  const index = Number(slotIndex);
+  if (!Number.isInteger(index) || index < 0 || index >= state.config.comboCount) return;
+
+  state.playerChain[index] = patternId;
+  trimEmptyTailSlots();
+  state.lastResult = null;
+  state.mismatches = new Set();
+  closeSlotPicker();
+  playPreview(patternId);
+  render();
+  setStatus(`第 ${index + 1} 格已填入`, "idle");
 }
 
 function createPatternTile(pattern, options = {}) {
@@ -299,23 +348,22 @@ function createPatternTile(pattern, options = {}) {
 }
 
 function addPattern(patternId) {
-  if (state.playerChain.length >= state.config.comboCount) {
+  const firstEmptySlot = findFirstEmptySlot();
+  if (firstEmptySlot === -1) {
     setStatus("链条已满", "warn");
     return;
   }
 
-  state.playerChain.push(patternId);
-  state.lastResult = null;
-  state.mismatches = new Set();
-  playPreview(patternId);
-  render();
-  setStatus(`${state.playerChain.length} / ${state.config.comboCount}`, "idle");
+  setSlotPattern(firstEmptySlot, patternId);
 }
 
 function undoLastCard() {
+  trimEmptyTailSlots();
   state.playerChain.pop();
+  trimEmptyTailSlots();
   state.lastResult = null;
   state.mismatches = new Set();
+  closeSlotPicker();
   render();
   setStatus("撤销", "idle");
 }
@@ -325,11 +373,13 @@ function clearPlayerChain() {
   state.lastResult = null;
   state.mismatches = new Set();
   clearPlayback();
+  closeSlotPicker();
   render();
   setStatus("已清空", "idle");
 }
 
 function checkPlayerChain() {
+  const filledPlayerPatterns = getFilledPlayerPatterns();
   const result = evaluatePlayerChain(state.targetChain, state.playerChain);
   state.lastResult = result;
   state.mismatches = new Set(result.mismatches.map((item) => item.index));
@@ -341,8 +391,8 @@ function checkPlayerChain() {
     }
     saveProgress();
     setStatus(`通过: 关卡 ${state.level}`, "success");
-  } else if (state.playerChain.length < state.targetChain.length) {
-    setStatus(`还差 ${state.targetChain.length - state.playerChain.length} 个`, "warn");
+  } else if (filledPlayerPatterns.length < state.targetChain.length) {
+    setStatus(`还差 ${state.targetChain.length - filledPlayerPatterns.length} 个`, "warn");
   } else {
     setStatus(`${result.matched} / ${result.total} 匹配`, "warn");
   }
@@ -351,7 +401,7 @@ function checkPlayerChain() {
 }
 
 async function playChain(kind) {
-  const chain = kind === "target" ? state.targetChain : state.playerChain;
+  const chain = kind === "target" ? state.targetChain : getFilledPlayerPatterns();
   if (chain.length === 0) {
     setStatus("没有内容", "warn");
     return;
@@ -665,6 +715,24 @@ function getSoundPreset(soundId) {
 
 function getSpeedOption(speedId) {
   return SPEED_OPTIONS.find((option) => option.id === speedId) || SPEED_OPTIONS[1];
+}
+
+function getFilledPlayerPatterns() {
+  return state.playerChain.filter(Boolean);
+}
+
+function findFirstEmptySlot() {
+  for (let index = 0; index < state.config.comboCount; index += 1) {
+    if (!state.playerChain[index]) return index;
+  }
+
+  return -1;
+}
+
+function trimEmptyTailSlots() {
+  while (state.playerChain.length > 0 && !state.playerChain.at(-1)) {
+    state.playerChain.pop();
+  }
 }
 
 function resolveSoundId(soundId) {

@@ -15,3 +15,18 @@ test("visible play button triggers target playback", () => {
   assert.match(appJs, /playControlButton:\s*document\.querySelector\("#playControlButton"\)/);
   assert.match(appJs, /selectors\.playControlButton\.addEventListener\("click",\s*\(\)\s*=>\s*playChain\("target"\)\)/);
 });
+
+test("empty chain slots open an embedded rhythm picker", () => {
+  assert.match(html, /id="slotPicker"/);
+  assert.match(html, /id="slotPickerGrid"/);
+  assert.match(html, /id="closeSlotPickerButton"/);
+  assert.match(appJs, /slotPicker:\s*document\.querySelector\("#slotPicker"\)/);
+  assert.match(appJs, /empty\.addEventListener\("click",\s*\(\)\s*=>\s*openSlotPicker\(index\)\)/);
+});
+
+test("rhythm picker fills the selected slot instead of auto-filling the target", () => {
+  assert.match(appJs, /function openSlotPicker\(slotIndex\)/);
+  assert.match(appJs, /function setSlotPattern\(slotIndex,\s*patternId\)/);
+  assert.match(appJs, /tile\.addEventListener\("click",\s*\(\)\s*=>\s*setSlotPattern\(state\.selectedSlotIndex,\s*pattern\.id\)\)/);
+  assert.doesNotMatch(appJs, /const targetPattern = state\.targetChain\[index\]/);
+});
