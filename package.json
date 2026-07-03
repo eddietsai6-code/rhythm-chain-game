@@ -12,7 +12,7 @@
   "homepage": "https://rhythm-chain-game.pages.dev/",
   "scripts": {
     "serve": "python -m http.server 4196 --bind 127.0.0.1",
-    "test": "node --test tests/rhythm-core.test.mjs"
+    "test": "node --test tests/*.test.mjs"
   },
   "keywords": [
     "rhythm",

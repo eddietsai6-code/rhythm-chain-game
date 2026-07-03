@@ -39,6 +39,7 @@ const selectors = {
   previewDeckButton: document.querySelector("#previewDeckButton"),
   soundSelect: document.querySelector("#soundSelect"),
   speedSelect: document.querySelector("#speedSelect"),
+  playControlButton: document.querySelector("#playControlButton"),
   tapButton: document.querySelector("#tapButton"),
   tapTempoLabel: document.querySelector("#tapTempoLabel"),
 };
@@ -92,6 +93,7 @@ function renderControls() {
 function bindControls() {
   selectors.soundSelect.addEventListener("change", handleSoundChange);
   selectors.speedSelect.addEventListener("change", handleSpeedChange);
+  selectors.playControlButton.addEventListener("click", () => playChain("target"));
   selectors.tapButton.addEventListener("click", handleTap);
   selectors.playTargetButton.addEventListener("click", () => playChain("target"));
   selectors.playPlayerButton.addEventListener("click", () => playChain("player"));
