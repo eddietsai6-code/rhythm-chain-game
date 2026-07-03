@@ -14,6 +14,13 @@
   --black: #050505;
   --violet: #7d5bf4;
   --lime: #cfff75;
+  --app-width: 430px;
+  --page-gutter: 10px;
+  --app-radius: 28px;
+  --app-padding-x: 14px;
+  --app-padding-y: 18px;
+  --tile-gap: 9px;
+  --tile-radius: 12px;
 }
 
 * {
@@ -36,16 +43,16 @@ button {
 .game-shell {
   min-height: 100vh;
   overflow-x: hidden;
-  padding: clamp(10px, 2.5vw, 28px);
+  padding: var(--page-gutter);
 }
 
 .practice-card {
-  width: min(100%, 820px);
+  width: min(100%, var(--app-width));
   margin: 0 auto;
   background: var(--paper);
-  border-radius: clamp(24px, 5vw, 46px);
+  border-radius: var(--app-radius);
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
-  padding: clamp(18px, 4vw, 48px);
+  padding: var(--app-padding-y) var(--app-padding-x) 20px;
 }
 
 .topbar {
@@ -74,7 +81,7 @@ p {
 
 h1 {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(44px, 10vw, 92px);
+  font-size: 52px;
   font-style: italic;
   font-weight: 500;
   line-height: 0.95;
@@ -85,7 +92,7 @@ h1 {
 .level-summary {
   margin-top: 10px;
   color: var(--muted);
-  font-size: clamp(12px, 2.4vw, 16px);
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -98,14 +105,14 @@ h1 {
 .beat-dots {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: clamp(20px, 7vw, 86px);
-  width: min(82%, 650px);
-  margin: clamp(34px, 7vw, 70px) auto clamp(24px, 5vw, 48px);
+  gap: 36px;
+  width: min(86%, 320px);
+  margin: 28px auto 24px;
 }
 
 .beat-dots span {
   justify-self: center;
-  width: clamp(34px, 8vw, 76px);
+  width: 38px;
   aspect-ratio: 1;
   border-radius: 50%;
   background: var(--blue-dot);
@@ -147,7 +154,7 @@ h1 {
 .pattern-library {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(10px, 2.8vw, 26px);
+  gap: var(--tile-gap);
 }
 
 .target-chain {
@@ -165,7 +172,7 @@ h1 {
   min-width: 0;
   aspect-ratio: 1;
   border: 0;
-  border-radius: clamp(9px, 2vw, 16px);
+  border-radius: var(--tile-radius);
   box-shadow: 0 5px 11px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   overflow: hidden;
@@ -184,7 +191,7 @@ h1 {
   position: absolute;
   inset: 7px;
   border: 2px solid rgba(255, 255, 255, 0.22);
-  border-radius: clamp(7px, 1.7vw, 12px);
+  border-radius: 10px;
   pointer-events: none;
 }
 
@@ -198,11 +205,11 @@ h1 {
 .target-chain .rhythm-card,
 .player-chain .rhythm-card,
 .empty-slot {
-  min-height: clamp(64px, 17vw, 132px);
+  min-height: 76px;
 }
 
 .pattern-library .rhythm-card {
-  min-height: clamp(72px, 17vw, 126px);
+  min-height: 76px;
 }
 
 .pattern-library .wide-rhythm {
@@ -216,7 +223,7 @@ h1 {
   border: 2px dashed #d5d5d5;
   background: #f6f6f6;
   color: #b4b4b4;
-  font-size: clamp(22px, 7vw, 38px);
+  font-size: 28px;
   font-weight: 900;
 }
 
@@ -225,11 +232,11 @@ h1 {
 }
 
 .slot-picker {
-  margin-top: clamp(8px, 2vw, 16px);
-  border-radius: clamp(14px, 3vw, 20px);
+  margin-top: 10px;
+  border-radius: 14px;
   background: #f4f4f4;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
-  padding: clamp(10px, 2.6vw, 16px);
+  padding: 10px;
 }
 
 .slot-picker-head {
@@ -242,7 +249,7 @@ h1 {
 
 .slot-picker-head strong {
   min-width: 0;
-  font-size: clamp(13px, 3vw, 16px);
+  font-size: 14px;
   font-weight: 900;
   line-height: 1.15;
 }
@@ -251,7 +258,7 @@ h1 {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  width: clamp(30px, 7vw, 36px);
+  width: 32px;
   aspect-ratio: 1;
   border: 0;
   border-radius: 50%;
@@ -259,7 +266,7 @@ h1 {
   color: var(--ink);
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  font-size: clamp(17px, 4vw, 22px);
+  font-size: 19px;
   font-weight: 900;
   line-height: 1;
 }
@@ -267,15 +274,15 @@ h1 {
 .slot-picker-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(8px, 2vw, 12px);
-  max-height: min(44vh, 330px);
+  gap: 8px;
+  max-height: 330px;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 2px 2px 4px;
 }
 
 .slot-picker .rhythm-card {
-  min-height: clamp(54px, 15vw, 96px);
+  min-height: 66px;
   box-shadow: 0 3px 9px rgba(0, 0, 0, 0.16);
 }
 
@@ -285,7 +292,7 @@ h1 {
 }
 
 .slot-picker .note-symbol {
-  font-size: clamp(28px, 8vw, 58px);
+  font-size: 34px;
 }
 
 .slot-picker .card-label {
@@ -323,26 +330,38 @@ h1 {
   text-align: center;
 }
 
+.slot-picker .combo-number.single-beat {
+  display: none;
+}
+
 .note-symbol {
   position: relative;
   z-index: 1;
   color: #111111;
   font-family: "Arial Unicode MS", "Noto Music", "Segoe UI Symbol", serif;
-  font-size: clamp(34px, 10vw, 78px);
+  font-size: 44px;
   font-weight: 900;
   line-height: 1;
   text-align: center;
 }
 
+.rhythm-card.dense-rhythm .note-symbol {
+  font-size: 34px;
+}
+
+.slot-picker .rhythm-card.dense-rhythm .note-symbol {
+  font-size: 28px;
+}
+
 .pattern-library .note-symbol {
-  font-size: clamp(30px, 8vw, 58px);
+  font-size: 38px;
 }
 
 .card-label {
   align-self: end;
   justify-self: start;
   color: inherit;
-  font-size: clamp(10px, 2.5vw, 13px);
+  font-size: 11px;
   font-weight: 900;
   line-height: 1.15;
 }
@@ -402,33 +421,83 @@ h1 {
   display: grid;
   justify-items: center;
   gap: 8px;
-  margin: clamp(24px, 5vw, 44px) 0 18px;
+  margin: 26px 0 18px;
+}
+
+.drill-progress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  justify-items: center;
+  width: 100%;
+  gap: 10px;
 }
 
 .drill-footer strong {
-  font-size: clamp(34px, 9vw, 64px);
+  font-size: 40px;
   font-weight: 900;
   letter-spacing: 0;
   line-height: 1;
 }
 
+.next-level-button {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+  min-width: 82px;
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--blue-dot);
+  color: #ffffff;
+  cursor: pointer;
+  padding: 7px 9px;
+  box-shadow: 0 4px 10px rgba(51, 174, 234, 0.28);
+  transition: transform 120ms ease, background 120ms ease, opacity 120ms ease;
+}
+
+.next-level-button span {
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.next-level-button strong {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+
+.next-level-button:active {
+  transform: translateY(1px);
+  background: #229fdc;
+}
+
+.next-level-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
 .status-strip,
-.drill-footer span {
+#statusText {
   min-height: 20px;
   color: var(--muted);
   font-size: 13px;
   font-weight: 800;
 }
 
-.drill-footer span[data-variant="success"] {
+#statusText[data-variant="success"] {
   color: var(--green);
 }
 
-.drill-footer span[data-variant="warn"] {
+#statusText[data-variant="warn"] {
   color: var(--red);
 }
 
-.drill-footer span[data-variant="playing"] {
+#statusText[data-variant="playing"] {
   color: var(--blue-dot);
 }
 
@@ -436,17 +505,17 @@ h1 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: stretch;
-  gap: clamp(7px, 2vw, 12px);
-  margin-top: clamp(10px, 3vw, 18px);
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .control-pill,
 .play-control,
 .tap-control {
   min-width: 0;
-  min-height: clamp(54px, 11vw, 66px);
+  min-height: 54px;
   border: 0;
-  border-radius: clamp(10px, 2vw, 14px);
+  border-radius: 12px;
   background: #f2f2f2;
   color: var(--ink);
   box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.06);
@@ -464,7 +533,7 @@ h1 {
 .play-control span,
 .tap-control span {
   color: var(--muted);
-  font-size: clamp(9px, 2.2vw, 11px);
+  font-size: 10px;
   font-weight: 900;
   line-height: 1;
 }
@@ -476,7 +545,7 @@ h1 {
   border-radius: 0;
   background: transparent;
   color: var(--ink);
-  font-size: clamp(14px, 3.2vw, 18px);
+  font-size: 16px;
   font-weight: 900;
   line-height: 1.1;
   text-align: center;
@@ -506,13 +575,13 @@ h1 {
 }
 
 .play-control span {
-  font-size: clamp(15px, 3.8vw, 19px);
+  font-size: 17px;
 }
 
 .play-control strong {
   display: block;
   width: 100%;
-  font-size: clamp(13px, 3vw, 16px);
+  font-size: 14px;
   font-weight: 900;
   line-height: 1.05;
   white-space: nowrap;
@@ -522,7 +591,7 @@ h1 {
   display: block;
   width: 100%;
   color: var(--ink);
-  font-size: clamp(12px, 3vw, 16px);
+  font-size: 13px;
   font-weight: 900;
   line-height: 1.05;
   white-space: nowrap;
@@ -642,7 +711,7 @@ h1 {
 }
 
 .library-panel {
-  margin-top: clamp(18px, 4vw, 32px);
+  margin-top: 22px;
 }
 
 .library-head {
@@ -655,7 +724,7 @@ h1 {
 }
 
 .level-panel {
-  margin-top: clamp(18px, 4vw, 28px);
+  margin-top: 22px;
 }
 
 .level-grid {
@@ -682,51 +751,4 @@ h1 {
 
 .level-button.passed {
   background: #d7f6e5;
-}
-
-@media (min-width: 760px) {
-  .practice-card {
-    padding-left: clamp(42px, 7vw, 74px);
-    padding-right: clamp(42px, 7vw, 74px);
-  }
-
-  .library-panel {
-    max-width: 720px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-}
-
-@media (max-width: 520px) {
-  .practice-card {
-    border-radius: 28px;
-    padding: 18px 14px 20px;
-  }
-
-  h1 {
-    font-size: clamp(36px, 11vw, 52px);
-  }
-
-  .beat-dots {
-    width: 90%;
-    gap: 16px;
-    margin-top: 26px;
-  }
-
-  .chain-row,
-  .pattern-library {
-    gap: 9px;
-  }
-
-  .chain-label {
-    padding: 0 2px;
-  }
-
-  .level-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-
-  .icon-button span:last-child {
-    display: none;
-  }
 }

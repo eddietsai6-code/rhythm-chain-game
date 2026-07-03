@@ -32,6 +32,8 @@ const selectors = {
   playerBeatCount: document.querySelector("#playerBeatCount"),
   statusText: document.querySelector("#statusText"),
   drillLabel: document.querySelector("#drillLabel"),
+  nextLevelButton: document.querySelector("#nextLevelButton"),
+  nextLevelLabel: document.querySelector("#nextLevelLabel"),
   libraryCount: document.querySelector("#libraryCount"),
   patternLibrary: document.querySelector("#patternLibrary"),
   playTargetButton: document.querySelector("#playTargetButton"),
@@ -106,7 +108,8 @@ function bindControls() {
   selectors.checkButton.addEventListener("click", checkPlayerChain);
   selectors.undoButton.addEventListener("click", undoLastCard);
   selectors.clearButton.addEventListener("click", clearPlayerChain);
-  selectors.nextButton.addEventListener("click", () => loadLevel(Math.min(LEVEL_COUNT, state.level + 1)));
+  selectors.nextLevelButton.addEventListener("click", () => goToNextLevel());
+  selectors.nextButton.addEventListener("click", () => goToNextLevel());
   selectors.previewDeckButton.addEventListener("click", previewDeck);
 }
 
@@ -204,6 +207,8 @@ function renderReadouts() {
   selectors.targetBeatCount.textContent = `${targetBeats} 拍`;
   selectors.playerBeatCount.textContent = `${playerBeats} 拍`;
   selectors.drillLabel.textContent = `关卡 ${state.level}`;
+  selectors.nextLevelLabel.textContent = state.level < LEVEL_COUNT ? `关卡 ${state.level + 1}` : "完成";
+  selectors.nextLevelButton.disabled = state.level >= LEVEL_COUNT;
 }
 
 function renderChain(container, chain, role) {
@@ -326,10 +331,12 @@ function createPatternTile(pattern, options = {}) {
   if (options.active) button.classList.add("active");
   if (options.compact) button.classList.add("compact");
   if (pattern.beats > 1) button.classList.add("wide-rhythm");
+  if (Array.from(pattern.symbol).length > 2) button.classList.add("dense-rhythm");
 
   const number = document.createElement("span");
   number.className = "combo-number";
-  number.textContent = Number.isInteger(options.index) ? String(options.index + 1) : `${pattern.beats} beat`;
+  number.textContent = Number.isInteger(options.index) ? String(options.index + 1) : `${pattern.beats} 拍`;
+  if (!Number.isInteger(options.index) && pattern.beats === 1) number.classList.add("single-beat");
 
   const symbol = document.createElement("span");
   symbol.className = "note-symbol";
@@ -376,6 +383,15 @@ function clearPlayerChain() {
   closeSlotPicker();
   render();
   setStatus("已清空", "idle");
+}
+
+function goToNextLevel() {
+  if (state.level >= LEVEL_COUNT) {
+    setStatus("已经是最后一关", "warn");
+    return;
+  }
+
+  loadLevel(state.level + 1);
 }
 
 function checkPlayerChain() {
