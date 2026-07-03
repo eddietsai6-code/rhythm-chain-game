@@ -110,7 +110,7 @@ const PATTERN_DEFINITIONS = [
     id: "fourSixteenths",
     label: "Four sixteenths",
     name: "四个十六分音符",
-    symbol: "♬",
+    symbol: "♬♬",
     family: "division",
     color: "blue",
     unlockLevel: 7,
@@ -345,7 +345,7 @@ export function scheduleChainEvents(chain, options = {}) {
       const beat = beatCursor + beatOffset;
       events.push({
         kind: "pulse",
-        audible: true,
+        audible: false,
         patternId,
         comboIndex,
         beat,

@@ -343,6 +343,28 @@ h1 {
   font-weight: 900;
   line-height: 1;
   text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.04em;
+}
+
+.note-symbol .symbol-text {
+  display: inline-block;
+  line-height: 1;
+}
+
+.rest-glyph {
+  width: 0.72em;
+  height: 1em;
+  flex: 0 0 auto;
+  color: currentColor;
+  overflow: visible;
+}
+
+.eighth-rest-glyph,
+.sixteenth-rest-glyph {
+  width: 0.78em;
 }
 
 .rhythm-card.dense-rhythm .note-symbol {

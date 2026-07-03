@@ -15,6 +15,8 @@ import {
 } from "./rhythm-core.js";
 
 const storageKey = "rhythm-chain-game-progress-v1";
+const REST_SYMBOLS = new Set(["𝄽", "𝄾", "𝄿"]);
+const svgNamespace = "http://www.w3.org/2000/svg";
 const selectors = {
   levelTitle: document.querySelector("#levelTitle"),
   levelMeta: document.querySelector("#levelMeta"),
@@ -331,7 +333,7 @@ function createPatternTile(pattern, options = {}) {
   if (options.active) button.classList.add("active");
   if (options.compact) button.classList.add("compact");
   if (pattern.beats > 1) button.classList.add("wide-rhythm");
-  if (Array.from(pattern.symbol).length > 2) button.classList.add("dense-rhythm");
+  if (Array.from(pattern.symbol).length > 2 || pattern.id === "fourSixteenths") button.classList.add("dense-rhythm");
 
   const number = document.createElement("span");
   number.className = "combo-number";
@@ -340,7 +342,7 @@ function createPatternTile(pattern, options = {}) {
 
   const symbol = document.createElement("span");
   symbol.className = "note-symbol";
-  symbol.textContent = pattern.symbol;
+  appendSymbolNodes(symbol, pattern);
 
   const label = document.createElement("span");
   label.className = "card-label";
@@ -352,6 +354,78 @@ function createPatternTile(pattern, options = {}) {
 
   button.append(number, symbol, label, syllables);
   return button;
+}
+
+function appendSymbolNodes(symbol, pattern) {
+  Array.from(pattern.symbol).forEach((char) => {
+    if (REST_SYMBOLS.has(char)) {
+      symbol.append(createRestGlyph(char));
+      return;
+    }
+
+    const text = document.createElement("span");
+    text.className = "symbol-text";
+    text.textContent = char;
+    symbol.append(text);
+  });
+}
+
+function createRestGlyph(restSymbol) {
+  const svg = document.createElementNS(svgNamespace, "svg");
+  svg.classList.add("rest-glyph");
+  svg.setAttribute("viewBox", "0 0 48 64");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+
+  if (restSymbol === "𝄾") {
+    svg.classList.add("eighth-rest-glyph");
+    svg.append(
+      createSvgElement("circle", { cx: "19", cy: "20", r: "7", fill: "currentColor" }),
+      createSvgElement("path", {
+        d: "M26 20 C35 27 29 43 18 57",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "7",
+        "stroke-linecap": "round",
+      })
+    );
+    return svg;
+  }
+
+  if (restSymbol === "𝄿") {
+    svg.classList.add("sixteenth-rest-glyph");
+    svg.append(
+      createSvgElement("circle", { cx: "19", cy: "17", r: "6", fill: "currentColor" }),
+      createSvgElement("circle", { cx: "27", cy: "31", r: "6", fill: "currentColor" }),
+      createSvgElement("path", {
+        d: "M30 18 C39 27 31 44 18 58",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "7",
+        "stroke-linecap": "round",
+      })
+    );
+    return svg;
+  }
+
+  svg.classList.add("quarter-rest-glyph");
+  svg.append(
+    createSvgElement("path", {
+      d: "M29 7 C18 15 34 24 23 32 C12 40 34 46 21 58",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "7",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    })
+  );
+  return svg;
+}
+
+function createSvgElement(tagName, attributes) {
+  const element = document.createElementNS(svgNamespace, tagName);
+  Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
+  return element;
 }
 
 function addPattern(patternId) {

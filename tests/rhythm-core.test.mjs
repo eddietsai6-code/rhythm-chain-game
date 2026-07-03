@@ -76,19 +76,41 @@ test("pattern catalog covers the reference rhythms plus expanded advanced types"
   );
 });
 
-test("every combo slot schedules an audible beat pulse before inner rhythm sounds", () => {
+test("every combo slot schedules a visual beat pulse before inner rhythm sounds", () => {
   const chain = ["quarterRest", "twoEighths", "triplet", "syncopatedTie"];
   const events = scheduleChainEvents(chain, { bpm: 96 });
   const expectedBeatStarts = Array.from({ length: calculateChainBeats(chain) }, (_, index) => index);
-  const audibleBeatStarts = new Set(
+  const visualBeatStarts = new Set(
     events
-      .filter((event) => event.kind === "pulse" && event.audible)
+      .filter((event) => event.kind === "pulse")
       .map((event) => event.beat)
   );
 
-  assert.deepEqual([...audibleBeatStarts], expectedBeatStarts);
+  assert.deepEqual([...visualBeatStarts], expectedBeatStarts);
+  assert.ok(events.filter((event) => event.kind === "pulse").every((event) => !event.audible));
   assert.ok(events.some((event) => event.kind === "note" && event.patternId === "triplet"));
   assert.ok(events.every((event) => Number.isFinite(event.timeSeconds)));
+});
+
+test("rest-only cards stay silent during playback", () => {
+  const audibleEvents = scheduleChainEvents(["quarterRest"], { bpm: 96 }).filter((event) => event.audible);
+
+  assert.deepEqual(audibleEvents, []);
+});
+
+test("four sixteenth notes schedule exactly four audible subdivisions", () => {
+  assert.equal(getPatternById("fourSixteenths").symbol, "♬♬");
+
+  const audibleEvents = scheduleChainEvents(["fourSixteenths"], { bpm: 96 })
+    .filter((event) => event.audible)
+    .map((event) => ({ kind: event.kind, beat: event.beat }));
+
+  assert.deepEqual(audibleEvents, [
+    { kind: "note", beat: 0 },
+    { kind: "note", beat: 0.25 },
+    { kind: "note", beat: 0.5 },
+    { kind: "note", beat: 0.75 },
+  ]);
 });
 
 test("getPatternById returns immutable pattern definitions", () => {

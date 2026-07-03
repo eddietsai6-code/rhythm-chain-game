@@ -62,3 +62,12 @@ test("dense rhythm symbols use a smaller app-safe size", () => {
   assert.match(css, /\.rhythm-card\.dense-rhythm \.note-symbol\s*{[^}]*font-size:\s*34px/s);
   assert.match(css, /\.slot-picker \.rhythm-card\.dense-rhythm \.note-symbol\s*{[^}]*font-size:\s*28px/s);
 });
+
+test("rest symbols render with app-native glyphs instead of mobile-unsafe text", () => {
+  assert.match(appJs, /const REST_SYMBOLS = new Set\(\["𝄽", "𝄾", "𝄿"\]\)/);
+  assert.match(appJs, /function appendSymbolNodes\(symbol,\s*pattern\)/);
+  assert.match(appJs, /symbol\.append\(createRestGlyph\(char\)\)/);
+  assert.match(appJs, /function createRestGlyph\(restSymbol\)/);
+  assert.match(css, /\.rest-glyph\s*{/);
+  assert.match(css, /\.note-symbol \.symbol-text\s*{/);
+});
