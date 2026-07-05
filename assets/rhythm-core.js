@@ -493,9 +493,9 @@ function normalizeDrumTone(tone, pattern, at) {
 }
 
 export function getComboCountForLevel(levelNumber) {
-  const zeroBasedLevel = levelNumber - 1;
-  const growth = zeroBasedLevel / (LEVEL_COUNT - 1);
-  return MIN_COMBO_COUNT + Math.round(growth * (MAX_COMBO_COUNT - MIN_COMBO_COUNT));
+  if (levelNumber >= 21) return MAX_COMBO_COUNT;
+  if (levelNumber >= 11) return 8;
+  return MIN_COMBO_COUNT;
 }
 
 function createLevels() {

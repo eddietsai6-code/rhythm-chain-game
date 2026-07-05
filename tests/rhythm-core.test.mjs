@@ -13,6 +13,7 @@ import {
   createTapTempoTracker,
   createTargetChain,
   evaluatePlayerChain,
+  getComboCountForLevel,
   getLevelConfig,
   getPatternById,
   getUnlockedPatterns,
@@ -21,17 +22,21 @@ import {
   scheduleCountInEvents,
 } from "../assets/rhythm-core.js";
 
-test("buildLevels creates 30 levels that grow from 4 to 16 rhythm combinations", () => {
+test("buildLevels creates 30 levels in 4, 8, and 16 combo tiers", () => {
   const levels = buildLevels();
 
   assert.equal(LEVEL_COUNT, 30);
   assert.equal(levels.length, 30);
-  assert.equal(levels[0].comboCount, 4);
-  assert.equal(levels.at(-1).comboCount, 16);
 
-  for (let index = 1; index < levels.length; index += 1) {
-    assert.ok(levels[index].comboCount >= levels[index - 1].comboCount);
-  }
+  assert.deepEqual(levels.slice(0, 10).map((level) => level.comboCount), Array(10).fill(4));
+  assert.deepEqual(levels.slice(10, 20).map((level) => level.comboCount), Array(10).fill(8));
+  assert.deepEqual(levels.slice(20, 30).map((level) => level.comboCount), Array(10).fill(16));
+  assert.equal(getComboCountForLevel(1), 4);
+  assert.equal(getComboCountForLevel(10), 4);
+  assert.equal(getComboCountForLevel(11), 8);
+  assert.equal(getComboCountForLevel(20), 8);
+  assert.equal(getComboCountForLevel(21), 16);
+  assert.equal(getComboCountForLevel(30), 16);
 });
 
 test("unlocked rhythm cards become more complex across the course", () => {

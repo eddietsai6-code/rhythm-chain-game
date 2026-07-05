@@ -31,6 +31,18 @@ test("empty chain slots open an embedded rhythm picker", () => {
   assert.match(appJs, /empty\.addEventListener\("click",\s*\(\)\s*=>\s*openSlotPicker\(index\)\)/);
 });
 
+test("player chain stays collapsed until the player starts editing", () => {
+  assert.match(html, /id="chainEntryButton"/);
+  assert.match(html, /id="playerLabel"/);
+  assert.match(appJs, /chainEntryButton:\s*document\.querySelector\("#chainEntryButton"\)/);
+  assert.match(appJs, /selectors\.chainEntryButton\.addEventListener\("click",\s*openNextOpenSlot\)/);
+  assert.match(appJs, /function shouldShowPlayerChain\(\)/);
+  assert.match(appJs, /selectors\.playerLabel\.hidden = !showPlayerChain/);
+  assert.match(appJs, /selectors\.playerChain\.hidden = !showPlayerChain/);
+  assert.match(appJs, /if \(!showPlayerChain\) \{/);
+  assert.match(css, /\.chain-entry-button\s*{/);
+});
+
 test("rhythm picker fills the selected slot instead of auto-filling the target", () => {
   assert.match(appJs, /function openSlotPicker\(slotIndex\)/);
   assert.match(appJs, /function setSlotPattern\(slotIndex,\s*patternId\)/);
@@ -60,6 +72,15 @@ test("main game keeps one app-style viewport across desktop tablet and phone", (
   assert.doesNotMatch(css, /@media\s*\(max-width:\s*520px\)/);
   assert.doesNotMatch(css, /\.note-symbol\s*{[^}]*vw/s);
   assert.doesNotMatch(css, /\.target-chain\s+\.rhythm-card,[^}]*min-height:\s*clamp\([^;]*vw/s);
+});
+
+test("target rhythm grid uses compact tiers for 8 and 16 combo levels", () => {
+  assert.match(appJs, /practiceCard:\s*document\.querySelector\("\.practice-card"\)/);
+  assert.match(appJs, /selectors\.practiceCard\.dataset\.comboTier = String\(state\.config\.comboCount\)/);
+  assert.match(css, /\.practice-card\[data-combo-tier="8"\] \.target-chain/s);
+  assert.match(css, /\.practice-card\[data-combo-tier="16"\] \.target-chain/s);
+  assert.match(css, /\.practice-card\[data-combo-tier="16"\] \.target-chain \.rhythm-card/s);
+  assert.match(css, /\.practice-card\[data-combo-tier="16"\] \.note-symbol/s);
 });
 
 test("slot picker beat badges use compact Chinese app labels", () => {

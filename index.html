@@ -38,11 +38,16 @@
             </div>
             <div class="chain-row target-chain" id="targetChain"></div>
 
-            <div class="chain-label player-label">
+            <button class="chain-entry-button" id="chainEntryButton" type="button" aria-label="填写我的链条">
+              <span>我的链条</span>
+              <strong>填写 0/4</strong>
+            </button>
+
+            <div class="chain-label player-label" id="playerLabel" hidden>
               <span>我的链条</span>
               <strong id="playerBeatCount">0 拍</strong>
             </div>
-            <div class="chain-row player-chain" id="playerChain"></div>
+            <div class="chain-row player-chain" id="playerChain" hidden></div>
 
             <section class="slot-picker" id="slotPicker" aria-label="选择节拍" hidden>
               <div class="slot-picker-head">
