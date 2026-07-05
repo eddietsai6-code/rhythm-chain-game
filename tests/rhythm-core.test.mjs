@@ -46,9 +46,8 @@ test("unlocked rhythm cards become more complex across the course", () => {
 
   assert.deepEqual(first, ["quarter", "twoEighths", "quarterRest", "eighthRestEighth"]);
   assert.ok(middle.includes("fourSixteenths"));
-  assert.ok(middle.includes("dottedEighthSixteenth"));
-  assert.ok(final.includes("triplet"));
-  assert.ok(final.includes("syncopatedTie"));
+  assert.ok(middle.includes("eighthTwoSixteenths"));
+  assert.ok(final.includes("twoSixteenthsEighth"));
   assert.ok(final.length > middle.length);
 });
 
@@ -63,28 +62,28 @@ test("target chains are deterministic, sized by level, and use only unlocked pat
   assert.ok(firstChain.every((patternId) => unlocked.has(patternId)));
 });
 
-test("pattern catalog covers the reference rhythms plus expanded advanced types", () => {
+test("pattern catalog only uses theory-safe one-beat quarter, eighth, and sixteenth cards", () => {
   const ids = RHYTHM_PATTERNS.map((pattern) => pattern.id);
   const families = new Set(RHYTHM_PATTERNS.map((pattern) => pattern.family));
 
-  assert.ok(ids.includes("quarter"));
-  assert.ok(ids.includes("twoEighths"));
-  assert.ok(ids.includes("fourSixteenths"));
-  assert.ok(ids.includes("triplet"));
-  assert.ok(ids.includes("dottedQuarterEighth"));
-  assert.ok(ids.includes("syncopatedTie"));
-  assert.ok(ids.includes("sixteenthRestRun"));
-  assert.ok(RHYTHM_PATTERNS.length >= 12);
-  assert.deepEqual(
-    ["basic", "rests", "division", "dotted", "triplet", "syncopation"].every((family) =>
-      families.has(family)
-    ),
-    true
-  );
+  assert.deepEqual(ids, [
+    "quarter",
+    "twoEighths",
+    "quarterRest",
+    "eighthRestEighth",
+    "eighthEighthRest",
+    "fourSixteenths",
+    "eighthTwoSixteenths",
+    "twoSixteenthsEighth",
+  ]);
+  assert.deepEqual([...families].sort(), ["basic", "division", "rests"]);
+  assert.ok(RHYTHM_PATTERNS.every((pattern) => pattern.beats === 1));
+  assert.ok(RHYTHM_PATTERNS.every((pattern) => pattern.symbol !== "♪ ♪"));
+  assert.ok(!ids.some((id) => /triplet|dotted|syncopated|tie|restRun|offbeat|mixed|anticipation/i.test(id)));
 });
 
 test("every combo slot schedules a visual beat pulse before inner rhythm sounds", () => {
-  const chain = ["quarterRest", "twoEighths", "triplet", "syncopatedTie"];
+  const chain = ["quarterRest", "twoEighths", "eighthTwoSixteenths", "twoSixteenthsEighth"];
   const events = scheduleChainEvents(chain, { bpm: 96 });
   const expectedBeatStarts = Array.from({ length: calculateChainBeats(chain) }, (_, index) => index);
   const visualBeatStarts = new Set(
@@ -95,7 +94,7 @@ test("every combo slot schedules a visual beat pulse before inner rhythm sounds"
 
   assert.deepEqual([...visualBeatStarts], expectedBeatStarts);
   assert.ok(events.filter((event) => event.kind === "pulse").every((event) => !event.audible));
-  assert.ok(events.some((event) => event.kind === "note" && event.patternId === "triplet"));
+  assert.ok(events.some((event) => event.kind === "note" && event.patternId === "eighthTwoSixteenths"));
   assert.ok(events.every((event) => Number.isFinite(event.timeSeconds)));
 });
 
@@ -118,6 +117,40 @@ test("four sixteenth notes schedule exactly four audible subdivisions", () => {
     { kind: "note", beat: 0.5 },
     { kind: "note", beat: 0.75 },
   ]);
+});
+
+test("front-eighth/back-sixteenth and front-sixteenth/back-eighth cards sound in the right order", () => {
+  const frontEighthBackSixteenth = scheduleChainEvents(["eighthTwoSixteenths"], { bpm: 96 })
+    .filter((event) => event.audible)
+    .map((event) => event.beat);
+  const frontSixteenthBackEighth = scheduleChainEvents(["twoSixteenthsEighth"], { bpm: 96 })
+    .filter((event) => event.audible)
+    .map((event) => event.beat);
+
+  assert.deepEqual(frontEighthBackSixteenth, [0, 0.5, 0.75]);
+  assert.deepEqual(frontSixteenthBackEighth, [0, 0.25, 0.5]);
+});
+
+test("all generated target chains avoid removed triplet, dotted, syncopated, and cross-beat cards", () => {
+  const allowedIds = new Set(RHYTHM_PATTERNS.map((pattern) => pattern.id));
+  const removedIds = new Set([
+    "dottedEighthSixteenth",
+    "sixteenthDottedEighth",
+    "eighthRestTwoSixteenths",
+    "dottedQuarterEighth",
+    "triplet",
+    "sixteenthRestRun",
+    "offbeatEighths",
+    "syncopatedTie",
+    "mixedSixteenthRest",
+    "anticipation",
+  ]);
+
+  for (const level of buildLevels()) {
+    const chain = createTargetChain(level);
+    assert.ok(chain.every((patternId) => allowedIds.has(patternId)));
+    assert.ok(chain.every((patternId) => !removedIds.has(patternId)));
+  }
 });
 
 test("count-in schedules four audible prep beats before playback", () => {
@@ -158,9 +191,9 @@ test("getPatternById returns immutable pattern definitions", () => {
 });
 
 test("evaluatePlayerChain requires the player's chain to match the target exactly", () => {
-  const target = ["quarter", "twoEighths", "quarterRest", "triplet"];
+  const target = ["quarter", "twoEighths", "quarterRest", "fourSixteenths"];
 
-  assert.deepEqual(evaluatePlayerChain(target, ["quarter", "twoEighths", "quarterRest", "triplet"]), {
+  assert.deepEqual(evaluatePlayerChain(target, ["quarter", "twoEighths", "quarterRest", "fourSixteenths"]), {
     passed: true,
     matched: 4,
     total: 4,
@@ -168,14 +201,14 @@ test("evaluatePlayerChain requires the player's chain to match the target exactl
     mismatches: [],
   });
 
-  assert.deepEqual(evaluatePlayerChain(target, ["quarter", "triplet", "quarterRest"]), {
+  assert.deepEqual(evaluatePlayerChain(target, ["quarter", "fourSixteenths", "quarterRest"]), {
     passed: false,
     matched: 2,
     total: 4,
     accuracy: 0.5,
     mismatches: [
-      { index: 1, expected: "twoEighths", actual: "triplet" },
-      { index: 3, expected: "triplet", actual: null },
+      { index: 1, expected: "twoEighths", actual: "fourSixteenths" },
+      { index: 3, expected: "fourSixteenths", actual: null },
     ],
   });
 });

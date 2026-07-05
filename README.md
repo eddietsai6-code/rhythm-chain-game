@@ -4,9 +4,9 @@ A dependency-free browser rhythm game for building rhythm chains from colored rh
 
 The game includes 30 levels. Level 1 starts with 4 rhythm combinations and
 the final level reaches 16 combinations. Rhythm cards unlock gradually from
-quarter notes, eighth notes, and rests into sixteenth-note groups, dotted
-rhythms, triplets, and syncopated ties. Every beat has an audible pulse, and
-each rhythm card adds its own Web Audio note events.
+quarter notes, eighth notes, and rests into theory-safe one-beat sixteenth-note
+groups. Every beat has an audible pulse, and each rhythm card adds its own Web
+Audio note events.
 
 Live site: https://rhythm-chain-game.pages.dev/
 

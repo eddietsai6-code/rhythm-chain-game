@@ -127,10 +127,11 @@ const PATTERN_DEFINITIONS = [
     label: "Two sixteenths + eighth",
     name: "十六十六八",
     symbol: "♬♪",
+    glyph: "two-sixteenths-eighth",
     family: "division",
     color: "blue",
-    unlockLevel: 8,
-    difficulty: 3,
+    unlockLevel: 16,
+    difficulty: 4,
     beats: 1,
     syllables: "TA-KA-DI",
     description: "Quick start, then a longer second half.",
@@ -141,9 +142,10 @@ const PATTERN_DEFINITIONS = [
     label: "Eighth + two sixteenths",
     name: "八十六十六",
     symbol: "♪♬",
+    glyph: "eighth-two-sixteenths",
     family: "division",
     color: "green",
-    unlockLevel: 9,
+    unlockLevel: 11,
     difficulty: 3,
     beats: 1,
     syllables: "TA-DI-MI",
@@ -292,7 +294,27 @@ const PATTERN_DEFINITIONS = [
   },
 ];
 
-export const RHYTHM_PATTERNS = deepFreeze(PATTERN_DEFINITIONS.map((pattern) => ({ ...pattern })));
+const THEORY_SAFE_PATTERN_ORDER = [
+  "quarter",
+  "twoEighths",
+  "quarterRest",
+  "eighthRestEighth",
+  "eighthEighthRest",
+  "fourSixteenths",
+  "eighthTwoSixteenths",
+  "twoSixteenthsEighth",
+];
+
+export const RHYTHM_PATTERNS = deepFreeze(
+  THEORY_SAFE_PATTERN_ORDER.map((patternId) => {
+    const pattern = PATTERN_DEFINITIONS.find((definition) => definition.id === patternId);
+    if (!pattern) {
+      throw new Error(`Missing rhythm pattern: ${patternId}`);
+    }
+
+    return { ...pattern };
+  })
+);
 const PATTERN_BY_ID = new Map(RHYTHM_PATTERNS.map((pattern) => [pattern.id, pattern]));
 const LEVELS = deepFreeze(createLevels());
 

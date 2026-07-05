@@ -113,6 +113,14 @@ test("four sixteenths render as one connected notation glyph", () => {
   assert.match(css, /\.four-sixteenth-glyph\s*{/);
 });
 
+test("mixed eighth-sixteenth cards render as connected notation glyphs", () => {
+  assert.match(appJs, /pattern\.glyph === "eighth-two-sixteenths"/);
+  assert.match(appJs, /pattern\.glyph === "two-sixteenths-eighth"/);
+  assert.match(appJs, /symbol\.append\(createMixedSixteenthGlyph\(pattern\.glyph\)\)/);
+  assert.match(appJs, /function createMixedSixteenthGlyph\(glyph\)/);
+  assert.match(css, /\.mixed-sixteenth-glyph\s*{/);
+});
+
 test("beat dots drive a four-count audible prep interaction before playback", () => {
   assert.match(appJs, /scheduleCountInEvents/);
   assert.match(appJs, /beatDots:\s*document\.querySelectorAll\("\.beat-dots span"\)/);

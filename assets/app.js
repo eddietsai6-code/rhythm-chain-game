@@ -429,6 +429,11 @@ function createPatternTile(pattern, options = {}) {
 }
 
 function appendSymbolNodes(symbol, pattern) {
+  if (pattern.glyph === "eighth-two-sixteenths" || pattern.glyph === "two-sixteenths-eighth") {
+    symbol.append(createMixedSixteenthGlyph(pattern.glyph));
+    return;
+  }
+
   if (pattern.glyph === "four-sixteenth-run") {
     symbol.append(createFourSixteenthGlyph());
     return;
@@ -524,6 +529,78 @@ function createFourSixteenthGlyph() {
       ry: "6",
       fill: "currentColor",
       transform: "rotate(-18 86 50)",
+    })
+  );
+  return svg;
+}
+
+function createMixedSixteenthGlyph(glyph) {
+  const svg = document.createElementNS(svgNamespace, "svg");
+  svg.classList.add("mixed-sixteenth-glyph");
+  svg.classList.add(glyph);
+  svg.setAttribute("viewBox", "0 0 96 64");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+
+  const lowerBeamStart = glyph === "eighth-two-sixteenths" ? 50 : 21;
+  const lowerBeamEnd = glyph === "eighth-two-sixteenths" ? 82 : 53;
+
+  svg.append(
+    createSvgElement("path", { d: "M22 12 L84 12 L84 19 L22 19 Z", fill: "currentColor" }),
+    createSvgElement("path", {
+      d: `M${lowerBeamStart} 25 L${lowerBeamEnd} 25 L${lowerBeamEnd} 32 L${lowerBeamStart} 32 Z`,
+      fill: "currentColor",
+    }),
+    createSvgElement("line", {
+      x1: "22",
+      y1: "16",
+      x2: "22",
+      y2: "49",
+      stroke: "currentColor",
+      "stroke-width": "5",
+      "stroke-linecap": "round",
+    }),
+    createSvgElement("line", {
+      x1: "53",
+      y1: "16",
+      x2: "53",
+      y2: "49",
+      stroke: "currentColor",
+      "stroke-width": "5",
+      "stroke-linecap": "round",
+    }),
+    createSvgElement("line", {
+      x1: "83",
+      y1: "16",
+      x2: "83",
+      y2: "49",
+      stroke: "currentColor",
+      "stroke-width": "5",
+      "stroke-linecap": "round",
+    }),
+    createSvgElement("ellipse", {
+      cx: "14",
+      cy: "50",
+      rx: "9",
+      ry: "6",
+      fill: "currentColor",
+      transform: "rotate(-18 14 50)",
+    }),
+    createSvgElement("ellipse", {
+      cx: "45",
+      cy: "50",
+      rx: "9",
+      ry: "6",
+      fill: "currentColor",
+      transform: "rotate(-18 45 50)",
+    }),
+    createSvgElement("ellipse", {
+      cx: "75",
+      cy: "50",
+      rx: "9",
+      ry: "6",
+      fill: "currentColor",
+      transform: "rotate(-18 75 50)",
     })
   );
   return svg;
