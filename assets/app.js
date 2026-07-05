@@ -72,6 +72,7 @@ const state = {
   playbackTimers: [],
   audioNodes: [],
   audioContext: null,
+  playbackKind: null,
 };
 
 function init() {
@@ -105,7 +106,7 @@ function renderControls() {
 function bindControls() {
   selectors.soundSelect.addEventListener("change", handleSoundChange);
   selectors.speedSelect.addEventListener("change", handleSpeedChange);
-  selectors.playControlButton.addEventListener("click", () => playChain("target"));
+  selectors.playControlButton.addEventListener("click", handlePlayControl);
   selectors.tapButton.addEventListener("click", handleTap);
   selectors.closeSlotPickerButton.addEventListener("click", closeSlotPicker);
   selectors.playTargetButton.addEventListener("click", () => playChain("target"));
@@ -117,6 +118,15 @@ function bindControls() {
   selectors.nextLevelButton.addEventListener("click", () => goToNextLevel());
   selectors.nextButton.addEventListener("click", () => goToNextLevel());
   selectors.previewDeckButton.addEventListener("click", previewDeck);
+}
+
+function handlePlayControl() {
+  if (state.playbackKind === "target") {
+    clearPlayback("stopped");
+    return;
+  }
+
+  playChain("target");
 }
 
 async function handleSoundChange() {
@@ -599,6 +609,8 @@ async function playChain(kind) {
 
   clearPlayback();
   const audioContext = await getAudioContext();
+  state.playbackKind = kind;
+  updatePlayControl(kind === "target");
   const bpm = getPlaybackBpm();
   const beatDuration = 60 / bpm;
   const countInStartTime = audioContext.currentTime + 0.08;
@@ -864,9 +876,11 @@ function scheduleHighlights(events, kind, startTime) {
   });
 
   const lastEvent = events.at(-1);
-  const endDelay = Math.max(0, (lastEvent.timeSeconds - startTime) * 1000 + 900);
+  const endDelay = Math.max(0, (lastEvent.timeSeconds - audioContext.currentTime) * 1000 + 900);
   state.playbackTimers.push(
     window.setTimeout(() => {
+      state.playbackKind = null;
+      updatePlayControl(false);
       state.activeTargetIndex = null;
       state.activePlayerIndex = null;
       renderChain(selectors.targetChain, state.targetChain, "target");
@@ -905,7 +919,7 @@ function clearDeckHighlight() {
   selectors.patternLibrary.querySelectorAll(".active").forEach((card) => card.classList.remove("active"));
 }
 
-function clearPlayback() {
+function clearPlayback(reason = "reset") {
   state.playbackTimers.forEach((timer) => window.clearTimeout(timer));
   state.playbackTimers = [];
   state.audioNodes.forEach((node) => {
@@ -916,15 +930,34 @@ function clearPlayback() {
     }
   });
   state.audioNodes = [];
+  state.playbackKind = null;
   state.activeTargetIndex = null;
   state.activePlayerIndex = null;
   clearCountInDots();
   clearDeckHighlight();
+  updatePlayControl(false);
+
+  if (reason === "stopped") {
+    setStatus("准备", "idle");
+  }
 }
 
 function setStatus(message, variant) {
   selectors.statusText.textContent = message;
   selectors.statusText.dataset.variant = variant;
+}
+
+function updatePlayControl(isPlaying) {
+  const icon = selectors.playControlButton.querySelector("span");
+  const strong = selectors.playControlButton.querySelector("strong");
+
+  selectors.playControlButton.dataset.playing = String(isPlaying);
+  selectors.playControlButton.setAttribute("aria-pressed", String(isPlaying));
+  selectors.playControlButton.setAttribute("aria-label", isPlaying ? "停止播放" : "播放目标节奏");
+  if (icon) icon.textContent = isPlaying ? "Ⅱ" : "▶";
+  if (strong) {
+    strong.textContent = isPlaying ? "暂停" : "播放";
+  }
 }
 
 function getPlaybackBpm() {
