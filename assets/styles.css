@@ -606,19 +606,26 @@ h1 {
 }
 
 .drill-progress {
-  display: grid;
-  grid-template-columns: 70px minmax(0, 1fr) 70px;
+  position: relative;
+  display: flex;
   align-items: center;
-  justify-items: center;
+  justify-content: space-between;
   width: 100%;
-  gap: 8px;
+  min-height: 72px;
 }
 
 .drill-footer strong {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   font-size: 40px;
   font-weight: 900;
   letter-spacing: 0;
   line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .level-nav-button {

@@ -61,7 +61,12 @@ test("drill footer exposes compact previous and next level buttons", () => {
   assert.match(appJs, /selectors\.nextLevelButton\.addEventListener\("click",\s*\(\)\s*=>\s*goToNextLevel\(\)\)/);
   assert.match(appJs, /function goToPreviousLevel\(\)/);
   assert.match(appJs, /function goToNextLevel\(\)/);
-  assert.match(css, /\.drill-progress\s*{[^}]*grid-template-columns:\s*70px minmax\(0,\s*1fr\) 70px/s);
+  assert.match(css, /\.drill-progress\s*{[^}]*position:\s*relative/s);
+  assert.match(css, /\.drill-progress\s*{[^}]*display:\s*flex/s);
+  assert.match(css, /\.drill-progress\s*{[^}]*justify-content:\s*space-between/s);
+  assert.match(css, /\.drill-footer strong\s*{[^}]*position:\s*absolute/s);
+  assert.match(css, /\.drill-footer strong\s*{[^}]*left:\s*50%/s);
+  assert.match(css, /\.drill-footer strong\s*{[^}]*transform:\s*translate\(-50%,\s*-50%\)/s);
   assert.match(css, /\.level-nav-button\s*{[^}]*width:\s*64px/s);
 });
 
