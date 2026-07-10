@@ -56,7 +56,8 @@ test("rhythm picker fills the selected slot instead of auto-filling the target",
 test("drill footer exposes compact previous and next level buttons", () => {
   assert.match(html, /id="prevLevelButton"/);
   assert.match(html, /id="nextLevelButton"/);
-  assert.match(html, />UP</);
+  assert.match(html, />BACK</);
+  assert.doesNotMatch(html, />UP</);
   assert.match(html, />NEXT</);
   assert.match(appJs, /prevLevelButton:\s*document\.querySelector\("#prevLevelButton"\)/);
   assert.match(appJs, /nextLevelButton:\s*document\.querySelector\("#nextLevelButton"\)/);
@@ -67,10 +68,23 @@ test("drill footer exposes compact previous and next level buttons", () => {
   assert.match(css, /\.drill-progress\s*{[^}]*position:\s*relative/s);
   assert.match(css, /\.drill-progress\s*{[^}]*display:\s*flex/s);
   assert.match(css, /\.drill-progress\s*{[^}]*justify-content:\s*space-between/s);
-  assert.match(css, /\.drill-footer strong\s*{[^}]*position:\s*absolute/s);
-  assert.match(css, /\.drill-footer strong\s*{[^}]*left:\s*50%/s);
-  assert.match(css, /\.drill-footer strong\s*{[^}]*transform:\s*translate\(-50%,\s*-50%\)/s);
+  assert.match(css, /\.drill-label-button\s*{[^}]*position:\s*absolute/s);
+  assert.match(css, /\.drill-label-button\s*{[^}]*left:\s*50%/s);
+  assert.match(css, /\.drill-label-button\s*{[^}]*transform:\s*translate\(-50%,\s*-50%\)/s);
   assert.match(css, /\.level-nav-button\s*{[^}]*width:\s*64px/s);
+});
+
+test("center level label opens a compact level jump panel", () => {
+  assert.match(html, /id="drillLabel"[^>]*aria-controls="levelJumpPanel"/);
+  assert.match(html, /id="levelJumpPanel"[^>]*hidden/);
+  assert.match(html, /id="levelList"/);
+  assert.match(appJs, /levelJumpPanel:\s*document\.querySelector\("#levelJumpPanel"\)/);
+  assert.match(appJs, /selectors\.drillLabel\.addEventListener\("click",\s*toggleLevelJumpPanel\)/);
+  assert.match(appJs, /function toggleLevelJumpPanel\(\)/);
+  assert.match(appJs, /function closeLevelJumpPanel\(\)/);
+  assert.match(appJs, /selectors\.drillLabel\.setAttribute\("aria-expanded",\s*String\(isOpen\)\)/);
+  assert.match(css, /\.level-jump-panel\s*{/);
+  assert.match(css, /\.level-grid\s*{/);
 });
 
 test("main game keeps one app-style viewport across desktop tablet and phone", () => {

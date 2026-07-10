@@ -22,33 +22,38 @@ import {
   scheduleCountInEvents,
 } from "../assets/rhythm-core.js";
 
-test("buildLevels creates 30 levels in 4, 8, and 16 combo tiers", () => {
+test("buildLevels creates 40 levels in 4, 8, and 16 combo tiers", () => {
   const levels = buildLevels();
 
-  assert.equal(LEVEL_COUNT, 30);
-  assert.equal(levels.length, 30);
+  assert.equal(LEVEL_COUNT, 40);
+  assert.equal(levels.length, 40);
 
   assert.deepEqual(levels.slice(0, 10).map((level) => level.comboCount), Array(10).fill(4));
   assert.deepEqual(levels.slice(10, 20).map((level) => level.comboCount), Array(10).fill(8));
-  assert.deepEqual(levels.slice(20, 30).map((level) => level.comboCount), Array(10).fill(16));
+  assert.deepEqual(levels.slice(20, 40).map((level) => level.comboCount), Array(20).fill(16));
   assert.equal(getComboCountForLevel(1), 4);
   assert.equal(getComboCountForLevel(10), 4);
   assert.equal(getComboCountForLevel(11), 8);
   assert.equal(getComboCountForLevel(20), 8);
   assert.equal(getComboCountForLevel(21), 16);
-  assert.equal(getComboCountForLevel(30), 16);
+  assert.equal(getComboCountForLevel(40), 16);
 });
 
 test("unlocked rhythm cards become more complex across the course", () => {
   const first = getUnlockedPatterns(1).map((pattern) => pattern.id);
   const middle = getUnlockedPatterns(15).map((pattern) => pattern.id);
-  const final = getUnlockedPatterns(30).map((pattern) => pattern.id);
+  const preSyncopation = getUnlockedPatterns(30).map((pattern) => pattern.id);
+  const final = getUnlockedPatterns(40).map((pattern) => pattern.id);
 
   assert.deepEqual(first, ["quarter", "twoEighths", "quarterRest", "eighthRestEighth"]);
   assert.ok(middle.includes("fourSixteenths"));
   assert.ok(middle.includes("eighthTwoSixteenths"));
-  assert.ok(final.includes("twoSixteenthsEighth"));
-  assert.ok(final.length > middle.length);
+  assert.ok(preSyncopation.includes("twoSixteenthsEighth"));
+  assert.ok(!preSyncopation.includes("sixteenthEighthSixteenth"));
+  assert.ok(!preSyncopation.includes("sixteenthRestThreeSixteenths"));
+  assert.ok(final.includes("sixteenthEighthSixteenth"));
+  assert.ok(final.includes("sixteenthRestThreeSixteenths"));
+  assert.ok(final.length > preSyncopation.length);
 });
 
 test("target chains are deterministic, sized by level, and use only unlocked patterns", () => {
@@ -75,11 +80,15 @@ test("pattern catalog only uses theory-safe one-beat quarter, eighth, and sixtee
     "fourSixteenths",
     "eighthTwoSixteenths",
     "twoSixteenthsEighth",
+    "sixteenthEighthSixteenth",
+    "sixteenthRestThreeSixteenths",
   ]);
-  assert.deepEqual([...families].sort(), ["basic", "division", "rests"]);
+  assert.deepEqual([...families].sort(), ["basic", "division", "rests", "syncopation"]);
   assert.ok(RHYTHM_PATTERNS.every((pattern) => pattern.beats === 1));
   assert.ok(RHYTHM_PATTERNS.every((pattern) => pattern.symbol !== "♪ ♪"));
-  assert.ok(!ids.some((id) => /triplet|dotted|syncopated|tie|restRun|offbeat|mixed|anticipation/i.test(id)));
+  assert.equal(getPatternById("sixteenthEighthSixteenth").color, "gold");
+  assert.equal(getPatternById("sixteenthRestThreeSixteenths").color, "orange");
+  assert.ok(!ids.some((id) => /triplet|dotted|tie|restRun|offbeat|mixed|anticipation/i.test(id)));
 });
 
 test("every combo slot schedules a visual beat pulse before inner rhythm sounds", () => {
@@ -129,6 +138,20 @@ test("front-eighth/back-sixteenth and front-sixteenth/back-eighth cards sound in
 
   assert.deepEqual(frontEighthBackSixteenth, [0, 0.5, 0.75]);
   assert.deepEqual(frontSixteenthBackEighth, [0, 0.25, 0.5]);
+});
+
+test("level 31 syncopation cards schedule one-beat sixteenth sounds correctly", () => {
+  const sixteenthEighthSixteenth = scheduleChainEvents(["sixteenthEighthSixteenth"], { bpm: 96 })
+    .filter((event) => event.audible)
+    .map((event) => event.beat);
+  const sixteenthRestThreeSixteenths = scheduleChainEvents(["sixteenthRestThreeSixteenths"], { bpm: 96 })
+    .filter((event) => event.audible)
+    .map((event) => event.beat);
+
+  assert.deepEqual(sixteenthEighthSixteenth, [0, 0.25, 0.75]);
+  assert.deepEqual(sixteenthRestThreeSixteenths, [0.25, 0.5, 0.75]);
+  assert.equal(getPatternById("sixteenthEighthSixteenth").beats, 1);
+  assert.equal(getPatternById("sixteenthRestThreeSixteenths").beats, 1);
 });
 
 test("all generated target chains avoid removed triplet, dotted, syncopated, and cross-beat cards", () => {

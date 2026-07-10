@@ -1,4 +1,4 @@
-export const LEVEL_COUNT = 30;
+export const LEVEL_COUNT = 40;
 export const SNARE_TONE = "snare";
 export const DEFAULT_SOUND_ID = SNARE_TONE;
 export const SOUND_PRESETS = deepFreeze([
@@ -152,6 +152,36 @@ const PATTERN_DEFINITIONS = [
     description: "A held first half followed by two faster notes.",
     hits: [hit(0, "stick", 0.84, 0.14), hit(0.5, "wood", 0.72), hit(0.75, "stick", 0.74)],
   },
+  {
+    id: "sixteenthEighthSixteenth",
+    label: "Sixteenth + eighth + sixteenth",
+    name: "十六八十六切分",
+    symbol: "♬♪",
+    glyph: "sixteenth-eighth-sixteenth",
+    family: "syncopation",
+    color: "gold",
+    unlockLevel: 31,
+    difficulty: 5,
+    beats: 1,
+    syllables: "TA-KA-MI",
+    description: "A one-beat syncopation with a longer middle sound.",
+    hits: [hit(0, "stick", 0.84), hit(0.25, "wood", 0.86, 0.14), hit(0.75, "stick", 0.78)],
+  },
+  {
+    id: "sixteenthRestThreeSixteenths",
+    label: "Sixteenth rest + three sixteenths",
+    name: "十六休止后三个十六",
+    symbol: "𝄿♬",
+    glyph: "sixteenth-rest-three-sixteenths",
+    family: "syncopation",
+    color: "orange",
+    unlockLevel: 31,
+    difficulty: 5,
+    beats: 1,
+    syllables: "shh-KA-DI-MI",
+    description: "Rest on the beat, then play the remaining three sixteenth subdivisions.",
+    hits: [hit(0.25, "wood", 0.78), hit(0.5, "stick", 0.84), hit(0.75, "wood", 0.76)],
+  },
 ];
 
 const THEORY_SAFE_PATTERN_ORDER = [
@@ -163,6 +193,8 @@ const THEORY_SAFE_PATTERN_ORDER = [
   "fourSixteenths",
   "eighthTwoSixteenths",
   "twoSixteenthsEighth",
+  "sixteenthEighthSixteenth",
+  "sixteenthRestThreeSixteenths",
 ];
 
 export const RHYTHM_PATTERNS = deepFreeze(

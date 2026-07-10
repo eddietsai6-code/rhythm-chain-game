@@ -40,6 +40,7 @@ const selectors = {
   playerBeatCount: document.querySelector("#playerBeatCount"),
   statusText: document.querySelector("#statusText"),
   drillLabel: document.querySelector("#drillLabel"),
+  levelJumpPanel: document.querySelector("#levelJumpPanel"),
   prevLevelButton: document.querySelector("#prevLevelButton"),
   nextLevelButton: document.querySelector("#nextLevelButton"),
   libraryCount: document.querySelector("#libraryCount"),
@@ -118,10 +119,13 @@ function bindControls() {
   selectors.checkButton.addEventListener("click", checkPlayerChain);
   selectors.undoButton.addEventListener("click", undoLastCard);
   selectors.clearButton.addEventListener("click", clearPlayerChain);
+  selectors.drillLabel.addEventListener("click", toggleLevelJumpPanel);
   selectors.prevLevelButton.addEventListener("click", () => goToPreviousLevel());
   selectors.nextLevelButton.addEventListener("click", () => goToNextLevel());
   selectors.nextButton.addEventListener("click", () => goToNextLevel());
   selectors.previewDeckButton.addEventListener("click", previewDeck);
+  document.addEventListener("click", closeLevelJumpPanelFromOutside);
+  document.addEventListener("keydown", closePanelsFromKeyboard);
 }
 
 function handlePlayControl() {
@@ -188,6 +192,7 @@ function loadLevel(levelNumber) {
   state.tapBpm = null;
   state.selectedSlotIndex = null;
   closeSlotPicker();
+  closeLevelJumpPanel();
   state.tapTracker.reset();
   selectors.tapTempoLabel.textContent = "-- BPM";
   state.activeTargetIndex = null;
@@ -224,6 +229,31 @@ function renderLevelList() {
       return button;
     })
   );
+}
+
+function toggleLevelJumpPanel() {
+  setLevelJumpPanelOpen(selectors.levelJumpPanel.hidden);
+}
+
+function closeLevelJumpPanel() {
+  setLevelJumpPanelOpen(false);
+}
+
+function setLevelJumpPanelOpen(isOpen) {
+  selectors.levelJumpPanel.hidden = !isOpen;
+  selectors.drillLabel.setAttribute("aria-expanded", String(isOpen));
+}
+
+function closeLevelJumpPanelFromOutside(event) {
+  if (selectors.levelJumpPanel.hidden) return;
+  if (selectors.drillLabel.contains(event.target) || selectors.levelJumpPanel.contains(event.target)) return;
+  closeLevelJumpPanel();
+}
+
+function closePanelsFromKeyboard(event) {
+  if (event.key !== "Escape") return;
+  closeSlotPicker();
+  closeLevelJumpPanel();
 }
 
 function renderReadouts() {
@@ -410,7 +440,9 @@ function createPatternTile(pattern, options = {}) {
   if (options.active) button.classList.add("active");
   if (options.compact) button.classList.add("compact");
   if (pattern.beats > 1) button.classList.add("wide-rhythm");
-  if (Array.from(pattern.symbol).length > 2 || pattern.id === "fourSixteenths") button.classList.add("dense-rhythm");
+  if (Array.from(pattern.symbol).length > 2 || pattern.id === "fourSixteenths" || pattern.family === "syncopation") {
+    button.classList.add("dense-rhythm");
+  }
 
   const number = document.createElement("span");
   number.className = "combo-number";
@@ -441,6 +473,11 @@ function appendSymbolNodes(symbol, pattern) {
 
   if (pattern.glyph === "four-sixteenth-run") {
     symbol.append(createFourSixteenthGlyph());
+    return;
+  }
+
+  if (pattern.glyph === "sixteenth-eighth-sixteenth" || pattern.glyph === "sixteenth-rest-three-sixteenths") {
+    symbol.append(createSyncopationGlyph(pattern.glyph));
     return;
   }
 
@@ -606,6 +643,141 @@ function createMixedSixteenthGlyph(glyph) {
       ry: "6",
       fill: "currentColor",
       transform: "rotate(-18 75 50)",
+    })
+  );
+  return svg;
+}
+
+function createSyncopationGlyph(glyph) {
+  const svg = document.createElementNS(svgNamespace, "svg");
+  svg.classList.add("syncopation-glyph");
+  svg.classList.add(glyph);
+  svg.setAttribute("viewBox", "0 0 104 64");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+
+  if (glyph === "sixteenth-rest-three-sixteenths") {
+    svg.append(
+      createSvgElement("circle", { cx: "16", cy: "16", r: "5.5", fill: "currentColor" }),
+      createSvgElement("circle", { cx: "24", cy: "29", r: "5.5", fill: "currentColor" }),
+      createSvgElement("path", {
+        d: "M27 17 C36 26 28 43 15 57",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "6",
+        "stroke-linecap": "round",
+      }),
+      createSvgElement("path", { d: "M48 12 L94 12 L94 19 L48 19 Z", fill: "currentColor" }),
+      createSvgElement("path", { d: "M48 25 L94 25 L94 32 L48 32 Z", fill: "currentColor" }),
+      createSvgElement("line", {
+        x1: "48",
+        y1: "16",
+        x2: "48",
+        y2: "49",
+        stroke: "currentColor",
+        "stroke-width": "5",
+        "stroke-linecap": "round",
+      }),
+      createSvgElement("line", {
+        x1: "71",
+        y1: "16",
+        x2: "71",
+        y2: "49",
+        stroke: "currentColor",
+        "stroke-width": "5",
+        "stroke-linecap": "round",
+      }),
+      createSvgElement("line", {
+        x1: "94",
+        y1: "16",
+        x2: "94",
+        y2: "49",
+        stroke: "currentColor",
+        "stroke-width": "5",
+        "stroke-linecap": "round",
+      }),
+      createSvgElement("ellipse", {
+        cx: "40",
+        cy: "50",
+        rx: "9",
+        ry: "6",
+        fill: "currentColor",
+        transform: "rotate(-18 40 50)",
+      }),
+      createSvgElement("ellipse", {
+        cx: "63",
+        cy: "50",
+        rx: "9",
+        ry: "6",
+        fill: "currentColor",
+        transform: "rotate(-18 63 50)",
+      }),
+      createSvgElement("ellipse", {
+        cx: "86",
+        cy: "50",
+        rx: "9",
+        ry: "6",
+        fill: "currentColor",
+        transform: "rotate(-18 86 50)",
+      })
+    );
+    return svg;
+  }
+
+  svg.append(
+    createSvgElement("path", { d: "M24 12 L84 12 L84 19 L24 19 Z", fill: "currentColor" }),
+    createSvgElement("path", { d: "M24 25 L42 25 L42 32 L24 32 Z", fill: "currentColor" }),
+    createSvgElement("path", { d: "M70 25 L84 25 L84 32 L70 32 Z", fill: "currentColor" }),
+    createSvgElement("line", {
+      x1: "24",
+      y1: "16",
+      x2: "24",
+      y2: "49",
+      stroke: "currentColor",
+      "stroke-width": "5",
+      "stroke-linecap": "round",
+    }),
+    createSvgElement("line", {
+      x1: "54",
+      y1: "16",
+      x2: "54",
+      y2: "49",
+      stroke: "currentColor",
+      "stroke-width": "5",
+      "stroke-linecap": "round",
+    }),
+    createSvgElement("line", {
+      x1: "84",
+      y1: "16",
+      x2: "84",
+      y2: "49",
+      stroke: "currentColor",
+      "stroke-width": "5",
+      "stroke-linecap": "round",
+    }),
+    createSvgElement("ellipse", {
+      cx: "16",
+      cy: "50",
+      rx: "9",
+      ry: "6",
+      fill: "currentColor",
+      transform: "rotate(-18 16 50)",
+    }),
+    createSvgElement("ellipse", {
+      cx: "46",
+      cy: "50",
+      rx: "9",
+      ry: "6",
+      fill: "currentColor",
+      transform: "rotate(-18 46 50)",
+    }),
+    createSvgElement("ellipse", {
+      cx: "76",
+      cy: "50",
+      rx: "9",
+      ry: "6",
+      fill: "currentColor",
+      transform: "rotate(-18 76 50)",
     })
   );
   return svg;

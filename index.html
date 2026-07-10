@@ -15,7 +15,7 @@
             <div class="brand-mark" aria-hidden="true"></div>
             <div>
               <h1>节奏游戏</h1>
-              <p id="levelTitle">第 1 / 30 关</p>
+              <p id="levelTitle">第 1 / 40 关</p>
             </div>
           </div>
           <div class="level-summary" aria-live="polite">
@@ -60,9 +60,22 @@
 
           <div class="drill-footer">
             <div class="drill-progress">
-              <button class="level-nav-button prev-level-button" id="prevLevelButton" type="button" aria-label="上一关">UP</button>
-              <strong id="drillLabel">关卡 1</strong>
+              <button class="level-nav-button prev-level-button" id="prevLevelButton" type="button" aria-label="上一关">BACK</button>
+              <button
+                class="drill-label-button"
+                id="drillLabel"
+                type="button"
+                aria-label="选择关卡"
+                aria-controls="levelJumpPanel"
+                aria-expanded="false"
+              >
+                关卡 1
+              </button>
               <button class="level-nav-button next-level-button" id="nextLevelButton" type="button" aria-label="下一关">NEXT</button>
+            </div>
+            <div class="level-jump-panel" id="levelJumpPanel" hidden>
+              <div class="panel-label">选择关卡</div>
+              <div class="level-grid" id="levelList"></div>
             </div>
             <span id="statusText" aria-live="polite">准备</span>
           </div>
@@ -123,10 +136,6 @@
           <div class="pattern-library" id="patternLibrary"></div>
         </aside>
 
-        <aside class="level-panel" hidden>
-          <div class="panel-label">30 关</div>
-          <div class="level-grid" id="levelList"></div>
-        </aside>
       </section>
     </main>
 

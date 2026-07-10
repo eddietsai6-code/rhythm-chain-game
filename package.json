@@ -1,7 +1,7 @@
 {
   "name": "rhythm-chain-game",
   "version": "0.1.0",
-  "description": "A browser rhythm-chain game with 30 progressively harder rhythm levels.",
+  "description": "A browser rhythm-chain game with 40 progressively harder rhythm levels.",
   "type": "module",
   "license": "MIT",
   "author": "eddietsai6-code",
