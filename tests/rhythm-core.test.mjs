@@ -256,12 +256,13 @@ test("sound presets expose snare as the default plus common alternate effects", 
 });
 
 test("speed options scale the level BPM predictably", () => {
+  assert.ok(buildLevels().every((level) => level.bpm === 80));
   assert.deepEqual(
-    SPEED_OPTIONS.map((option) => resolvePlaybackBpm(96, option.multiplier)),
-    [72, 96, 120, 144]
+    SPEED_OPTIONS.map((option) => resolvePlaybackBpm(80, option.multiplier)),
+    [60, 80, 100, 120]
   );
-  assert.equal(resolvePlaybackBpm(96, 0.1), 48);
-  assert.equal(resolvePlaybackBpm(96, 3), 192);
+  assert.equal(resolvePlaybackBpm(80, 0.1), 40);
+  assert.equal(resolvePlaybackBpm(80, 3), 160);
 });
 
 test("tap tempo tracker estimates BPM from recent tap intervals", () => {

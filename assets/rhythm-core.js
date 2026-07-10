@@ -19,7 +19,7 @@ export const SPEED_OPTIONS = deepFreeze([
 ]);
 const MIN_COMBO_COUNT = 4;
 const MAX_COMBO_COUNT = 16;
-const DEFAULT_BPM = 88;
+const DEFAULT_BPM = 80;
 export const COUNT_IN_BEATS = 4;
 
 function deepFreeze(value) {
@@ -419,7 +419,7 @@ function createLevels() {
     return {
       level,
       comboCount,
-      bpm: 78 + Math.round(index * 2.05),
+      bpm: DEFAULT_BPM,
       maxPatternDifficulty: Math.min(9, 1 + Math.floor(index / 3)),
       targetStars: Math.max(6, comboCount + Math.floor(level / 5)),
       seed: 9137 + level * 7919,

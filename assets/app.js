@@ -658,13 +658,43 @@ function createSyncopationGlyph(glyph) {
 
   if (glyph === "sixteenth-rest-three-sixteenths") {
     svg.append(
-      createSvgElement("circle", { cx: "16", cy: "16", r: "5.5", fill: "currentColor" }),
-      createSvgElement("circle", { cx: "24", cy: "29", r: "5.5", fill: "currentColor" }),
+      createSvgElement("circle", {
+        class: "sixteenth-rest-flag-upper syncopation-sixteenth-rest-flag-upper",
+        cx: "16",
+        cy: "16",
+        r: "5.5",
+        fill: "currentColor",
+      }),
+      createSvgElement("circle", {
+        class: "sixteenth-rest-flag-lower syncopation-sixteenth-rest-flag-lower",
+        cx: "23",
+        cy: "29",
+        r: "5.5",
+        fill: "currentColor",
+      }),
       createSvgElement("path", {
-        d: "M27 17 C36 26 28 43 15 57",
+        class: "sixteenth-rest-stem syncopation-sixteenth-rest-stem",
+        d: "M30 7 C36 19 33 31 27 42 C24 48 20 54 16 58",
         fill: "none",
         stroke: "currentColor",
         "stroke-width": "6",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+      }),
+      createSvgElement("path", {
+        class: "syncopation-sixteenth-rest-hook-upper",
+        d: "M22 16 C31 19 36 25 33 32",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "5",
+        "stroke-linecap": "round",
+      }),
+      createSvgElement("path", {
+        class: "syncopation-sixteenth-rest-hook-lower",
+        d: "M28 29 C36 33 37 41 30 48",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "5",
         "stroke-linecap": "round",
       }),
       createSvgElement("path", { d: "M48 12 L94 12 L94 19 L48 19 Z", fill: "currentColor" }),
@@ -808,13 +838,31 @@ function createRestGlyph(restSymbol) {
   if (restSymbol === "𝄿") {
     svg.classList.add("sixteenth-rest-glyph");
     svg.append(
-      createSvgElement("circle", { cx: "19", cy: "17", r: "6", fill: "currentColor" }),
-      createSvgElement("circle", { cx: "27", cy: "31", r: "6", fill: "currentColor" }),
+      createSvgElement("circle", { class: "sixteenth-rest-flag-upper", cx: "17", cy: "17", r: "5.8", fill: "currentColor" }),
+      createSvgElement("circle", { class: "sixteenth-rest-flag-lower", cx: "23", cy: "31", r: "5.8", fill: "currentColor" }),
       createSvgElement("path", {
-        d: "M30 18 C39 27 31 44 18 58",
+        class: "sixteenth-rest-stem",
+        d: "M31 8 C37 20 34 32 28 43 C25 49 21 54 17 59",
         fill: "none",
         stroke: "currentColor",
-        "stroke-width": "7",
+        "stroke-width": "6.5",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+      }),
+      createSvgElement("path", {
+        class: "sixteenth-rest-hook-upper",
+        d: "M23 17 C33 20 38 26 34 33",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "5.5",
+        "stroke-linecap": "round",
+      }),
+      createSvgElement("path", {
+        class: "sixteenth-rest-hook-lower",
+        d: "M29 31 C38 35 39 43 31 50",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "5.5",
         "stroke-linecap": "round",
       })
     );

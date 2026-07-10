@@ -124,6 +124,9 @@ test("rest symbols render with app-native glyphs instead of mobile-unsafe text",
   assert.match(appJs, /function appendSymbolNodes\(symbol,\s*pattern\)/);
   assert.match(appJs, /symbol\.append\(createRestGlyph\(char\)\)/);
   assert.match(appJs, /function createRestGlyph\(restSymbol\)/);
+  assert.match(appJs, /sixteenth-rest-stem/);
+  assert.match(appJs, /sixteenth-rest-flag-upper/);
+  assert.match(appJs, /sixteenth-rest-flag-lower/);
   assert.match(css, /\.rest-glyph\s*{/);
   assert.match(css, /\.note-symbol \.symbol-text\s*{/);
 });
@@ -141,6 +144,13 @@ test("mixed eighth-sixteenth cards render as connected notation glyphs", () => {
   assert.match(appJs, /symbol\.append\(createMixedSixteenthGlyph\(pattern\.glyph\)\)/);
   assert.match(appJs, /function createMixedSixteenthGlyph\(glyph\)/);
   assert.match(css, /\.mixed-sixteenth-glyph\s*{/);
+});
+
+test("syncopated sixteenth-rest card uses the standard rest glyph structure", () => {
+  assert.match(appJs, /glyph === "sixteenth-rest-three-sixteenths"/);
+  assert.match(appJs, /syncopation-sixteenth-rest-stem/);
+  assert.match(appJs, /syncopation-sixteenth-rest-flag-upper/);
+  assert.match(appJs, /syncopation-sixteenth-rest-flag-lower/);
 });
 
 test("beat dots drive a four-count audible prep interaction before playback", () => {
