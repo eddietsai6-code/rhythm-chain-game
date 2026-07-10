@@ -125,12 +125,16 @@ function bindControls() {
 }
 
 function handlePlayControl() {
-  if (state.playbackKind === "target") {
+  if (state.playbackKind) {
     clearPlayback("stopped");
     return;
   }
 
-  playChain("target");
+  playChain(getPlayControlKind());
+}
+
+function getPlayControlKind() {
+  return getFilledPlayerPatterns().length > 0 ? "player" : "target";
 }
 
 function openNextOpenSlot() {
@@ -253,6 +257,7 @@ function renderReadouts() {
   selectors.drillLabel.textContent = `关卡 ${state.level}`;
   selectors.prevLevelButton.disabled = state.level <= 1;
   selectors.nextLevelButton.disabled = state.level >= LEVEL_COUNT;
+  updatePlayControl(Boolean(state.playbackKind), state.playbackKind || getPlayControlKind());
 }
 
 function renderChain(container, chain, role) {
@@ -745,7 +750,7 @@ async function playChain(kind) {
   clearPlayback();
   const audioContext = await getAudioContext();
   state.playbackKind = kind;
-  updatePlayControl(kind === "target");
+  updatePlayControl(true, kind);
   const bpm = getPlaybackBpm();
   const beatDuration = 60 / bpm;
   const countInStartTime = audioContext.currentTime + 0.08;
@@ -1082,13 +1087,15 @@ function setStatus(message, variant) {
   selectors.statusText.dataset.variant = variant;
 }
 
-function updatePlayControl(isPlaying) {
+function updatePlayControl(isPlaying, kind = getPlayControlKind()) {
   const icon = selectors.playControlButton.querySelector("span");
   const strong = selectors.playControlButton.querySelector("strong");
+  const label = kind === "player" ? "播放我的链条" : "播放目标节奏";
 
   selectors.playControlButton.dataset.playing = String(isPlaying);
+  selectors.playControlButton.dataset.kind = kind;
   selectors.playControlButton.setAttribute("aria-pressed", String(isPlaying));
-  selectors.playControlButton.setAttribute("aria-label", isPlaying ? "停止播放" : "播放目标节奏");
+  selectors.playControlButton.setAttribute("aria-label", isPlaying ? "停止播放" : label);
   if (icon) icon.textContent = isPlaying ? "Ⅱ" : "▶";
   if (strong) {
     strong.textContent = isPlaying ? "暂停" : "播放";

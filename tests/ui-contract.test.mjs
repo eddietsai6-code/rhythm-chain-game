@@ -12,13 +12,16 @@ test("visible toolbar includes a play button for the target rhythm", () => {
   assert.match(html, />播放</);
 });
 
-test("visible play button toggles target playback and stop state", () => {
+test("visible play button toggles the current editable chain and stop state", () => {
   assert.match(appJs, /playControlButton:\s*document\.querySelector\("#playControlButton"\)/);
   assert.match(appJs, /selectors\.playControlButton\.addEventListener\("click",\s*handlePlayControl\)/);
   assert.match(appJs, /function handlePlayControl\(\)/);
-  assert.match(appJs, /if \(state\.playbackKind === "target"\)/);
+  assert.match(appJs, /if \(state\.playbackKind\)/);
   assert.match(appJs, /clearPlayback\("stopped"\)/);
-  assert.match(appJs, /function updatePlayControl\(isPlaying\)/);
+  assert.match(appJs, /playChain\(getPlayControlKind\(\)\)/);
+  assert.match(appJs, /function getPlayControlKind\(\)/);
+  assert.match(appJs, /getFilledPlayerPatterns\(\)\.length > 0 \? "player" : "target"/);
+  assert.match(appJs, /function updatePlayControl\(isPlaying,\s*kind = getPlayControlKind\(\)\)/);
   assert.match(appJs, /strong\.textContent = isPlaying \? "暂停" : "播放"/);
   assert.match(appJs, /lastEvent\.timeSeconds - audioContext\.currentTime/);
 });
