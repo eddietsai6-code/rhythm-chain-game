@@ -845,7 +845,7 @@ function createAdvancedRhythmGlyph(glyph) {
 
   if (glyph === "eighth-rest-two-sixteenths") {
     svg.append(
-      createEighthRestGroup({ variant: "advanced", transform: "translate(0 -4) scale(1.1)" }),
+      createEighthRestGroup({ variant: "advanced", transform: "translate(-2 -6) scale(1.15)" }),
       createSvgElement("path", { d: "M64 10 L104 10 L104 17 L64 17 Z", fill: "currentColor" }),
       createSvgElement("path", { d: "M64 24 L104 24 L104 31 L64 31 Z", fill: "currentColor" }),
       createSvgElement("line", {
@@ -896,7 +896,7 @@ function createAdvancedRhythmGlyph(glyph) {
       }),
       createNoteHead(13, 50),
       createNoteHead(54, 50),
-      createEighthRestGroup({ variant: "advanced", transform: "translate(65 -4) scale(1.1)" })
+      createEighthRestGroup({ variant: "advanced", transform: "translate(62 -6) scale(1.15)" })
     );
     return svg;
   }
@@ -1147,33 +1147,16 @@ function createEighthRestGroup(options = {}) {
     .filter(Boolean)
     .join(" ");
 
+  // Bravura/SMuFL-proportioned outline keeps rests consistent across devices.
+  const eighthRestOutline =
+    "M193 154 C96 251 193 207 150 251 C0 154 43 251 0 207 C39 81 0 124 17 98 C117 56 62 65 89 56 C173 66 137 56 157 60 C225 88 193 72 206 78 C232 89 228 89 230 89 C239 76 238 89 239 84 C238 60 239 72 239 66 C104 -343 233 39 130 -248 C145 -361 104 -360 137 -361 C196 -347 161 -361 181 -359 C341 161 200 -344 341 161 C356 217 347 187 354 210 C338 240 356 232 341 239 C323 235 336 240 331 240 C193 140 312 226 240 140 Z";
+
   group.append(
-    createSvgElement("ellipse", {
-      class: className("eighth-rest-head"),
-      cx: "18",
-      cy: "24",
-      rx: "7.8",
-      ry: "6.1",
+    createSvgElement("path", {
+      class: className("eighth-rest-outline"),
+      d: eighthRestOutline,
       fill: "currentColor",
-      transform: "rotate(-15 18 24)",
-    }),
-    createSvgElement("path", {
-      class: className("eighth-rest-stem"),
-      d: "M37 8 C34 23 29 38 21 51 C18 55 16 58 13 61",
-      fill: "none",
-      stroke: "currentColor",
-      "stroke-width": "7.2",
-      "stroke-linecap": "round",
-      "stroke-linejoin": "round",
-    }),
-    createSvgElement("path", {
-      class: className("eighth-rest-hook"),
-      d: "M24 24 C32 24 38 16 39 8",
-      fill: "none",
-      stroke: "currentColor",
-      "stroke-width": "6.6",
-      "stroke-linecap": "round",
-      "stroke-linejoin": "round",
+      transform: "translate(4 30) scale(0.1 -0.1)",
     })
   );
 

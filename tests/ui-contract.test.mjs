@@ -192,9 +192,8 @@ test("level 41 advanced rhythms render as connected notation glyphs", () => {
   assert.match(appJs, /function createAdvancedRhythmGlyph\(glyph\)/);
   assert.match(appJs, /createEighthRestGroup\(\{\s*variant: "advanced"/);
   assert.match(appJs, /classNames = \["standard-eighth-rest"\]/);
-  assert.match(appJs, /className\("eighth-rest-head"\)/);
-  assert.match(appJs, /className\("eighth-rest-stem"\)/);
-  assert.match(appJs, /className\("eighth-rest-hook"\)/);
+  assert.match(appJs, /eighthRestOutline/);
+  assert.match(appJs, /className\("eighth-rest-outline"\)/);
   assert.match(appJs, /classList\.add\("advanced-rhythm-glyph"\)/);
   assert.match(css, /\.advanced-rhythm-glyph\s*{/);
 });
