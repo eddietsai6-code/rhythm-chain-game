@@ -87,6 +87,27 @@ test("center level label opens a compact level jump panel", () => {
   assert.match(css, /\.level-grid\s*{/);
 });
 
+test("title area exposes roman numeral page switches", () => {
+  assert.match(html, /id="pageSwitch"/);
+  assert.match(html, /aria-label="切换难度页面"/);
+  assert.match(appJs, /LEVEL_PAGES/);
+  assert.match(appJs, /pageSwitch:\s*document\.querySelector\("#pageSwitch"\)/);
+  assert.match(appJs, /function renderPageSwitch\(\)/);
+  assert.match(appJs, /button\.textContent = page\.label/);
+  assert.match(appJs, /page\.locked \|\| page\.startLevel > LEVEL_COUNT/);
+  assert.match(appJs, /loadLevel\(page\.startLevel\)/);
+  assert.match(appJs, /button\.setAttribute\("aria-label", `第 \$\{page\.label\} 页`\)/);
+  assert.match(css, /\.page-switch\s*{/);
+  assert.match(css, /\.page-switch-button\.active\s*{/);
+});
+
+test("level jump panel is scoped to the current roman page", () => {
+  assert.match(appJs, /function getCurrentPageLevels\(\)/);
+  assert.match(appJs, /getCurrentPageLevels\(\)\.map\(\(level\) =>/);
+  assert.match(appJs, /const currentPage = getLevelPage\(state\.level\)/);
+  assert.match(appJs, /level >= currentPage\.startLevel && level <= currentPage\.endLevel/);
+});
+
 test("main game keeps one app-style viewport across desktop tablet and phone", () => {
   assert.match(css, /--app-width:\s*430px/);
   assert.match(css, /\.practice-card\s*{[^}]*width:\s*min\(100%,\s*var\(--app-width\)\)/s);
@@ -124,9 +145,13 @@ test("rest symbols render with app-native glyphs instead of mobile-unsafe text",
   assert.match(appJs, /function appendSymbolNodes\(symbol,\s*pattern\)/);
   assert.match(appJs, /symbol\.append\(createRestGlyph\(char\)\)/);
   assert.match(appJs, /function createRestGlyph\(restSymbol\)/);
+  assert.match(appJs, /function createStandardSixteenthRestGroup\(options = \{\}\)/);
+  assert.match(appJs, /sixteenth-rest-head-upper/);
+  assert.match(appJs, /sixteenth-rest-head-lower/);
   assert.match(appJs, /sixteenth-rest-stem/);
   assert.match(appJs, /sixteenth-rest-flag-upper/);
   assert.match(appJs, /sixteenth-rest-flag-lower/);
+  assert.match(appJs, /rotate\(-12 18 18\)/);
   assert.match(css, /\.rest-glyph\s*{/);
   assert.match(css, /\.note-symbol \.symbol-text\s*{/);
 });
@@ -146,11 +171,60 @@ test("mixed eighth-sixteenth cards render as connected notation glyphs", () => {
   assert.match(css, /\.mixed-sixteenth-glyph\s*{/);
 });
 
+test("level 41 advanced rhythms render as connected notation glyphs", () => {
+  assert.match(appJs, /pattern\.glyph === "eighth-rest-two-sixteenths"/);
+  assert.match(appJs, /pattern\.glyph === "dotted-eighth-sixteenth"/);
+  assert.match(appJs, /pattern\.glyph === "two-sixteenths-eighth-rest"/);
+  assert.match(appJs, /symbol\.append\(createAdvancedRhythmGlyph\(pattern\.glyph\)\)/);
+  assert.match(appJs, /function createAdvancedRhythmGlyph\(glyph\)/);
+  assert.match(appJs, /createEighthRestGroup\(/);
+  assert.match(appJs, /classList\.add\("advanced-rhythm-glyph"\)/);
+  assert.match(css, /\.advanced-rhythm-glyph\s*{/);
+});
+
+test("level 51 triplet rhythms render as tuplet notation glyphs", () => {
+  assert.match(appJs, /pattern\.glyph === "eighth-triplet"/);
+  assert.match(appJs, /pattern\.glyph === "triplet-rest-middle"/);
+  assert.match(appJs, /pattern\.glyph === "sixteenth-rest-dotted-eighth"/);
+  assert.match(appJs, /symbol\.append\(createChallengeRhythmGlyph\(pattern\.glyph\)\)/);
+  assert.match(appJs, /function createChallengeRhythmGlyph\(glyph\)/);
+  assert.match(appJs, /classList\.add\("challenge-rhythm-glyph"\)/);
+  assert.match(appJs, /createTupletBracket\(3,/);
+  assert.match(appJs, /createSvgText\(String\(number\)/);
+  assert.match(css, /\.challenge-rhythm-glyph\s*{/);
+});
+
+test("level 61 quintuplet and sextuplet rhythms render as extended tuplet glyphs", () => {
+  assert.match(appJs, /pattern\.glyph === "quintuplet"/);
+  assert.match(appJs, /pattern\.glyph === "sextuplet"/);
+  assert.match(appJs, /symbol\.append\(createExpertRhythmGlyph\(pattern\.glyph\)\)/);
+  assert.match(appJs, /function createExpertRhythmGlyph\(glyph\)/);
+  assert.match(appJs, /classList\.add\("expert-rhythm-glyph"\)/);
+  assert.match(appJs, /const count = getExpertTupletCount\(glyph\)/);
+  assert.match(appJs, /createTupletBracket\(count,\s*9,\s*123\)/);
+  assert.match(css, /\.expert-rhythm-glyph\s*{/);
+});
+
+test("level 71 tuplet-rest rhythms render with expert rest tuplets", () => {
+  assert.match(appJs, /pattern\.glyph === "quintuplet-rest-first"/);
+  assert.match(appJs, /pattern\.glyph === "quintuplet-rest-middle"/);
+  assert.match(appJs, /pattern\.glyph === "sextuplet-rest-middle"/);
+  assert.match(appJs, /function getExpertTupletRestIndices\(glyph\)/);
+  assert.match(appJs, /const restIndices = new Set\(getExpertTupletRestIndices\(glyph\)\)/);
+  assert.match(appJs, /restIndices\.has\(index\)/);
+  assert.match(appJs, /createExpertTupletRest\(headX,\s*headY\)/);
+});
+
 test("syncopated sixteenth-rest card uses the standard rest glyph structure", () => {
   assert.match(appJs, /glyph === "sixteenth-rest-three-sixteenths"/);
-  assert.match(appJs, /syncopation-sixteenth-rest-stem/);
-  assert.match(appJs, /syncopation-sixteenth-rest-flag-upper/);
-  assert.match(appJs, /syncopation-sixteenth-rest-flag-lower/);
+  assert.match(appJs, /createStandardSixteenthRestGroup\(\{\s*variant: "syncopation"/);
+  assert.match(appJs, /const variantPrefix = options\.variant \? `\$\{options\.variant\}-` : ""/);
+  assert.match(appJs, /`\$\{variantPrefix\}\$\{baseClass\}`/);
+  assert.match(appJs, /className\("sixteenth-rest-head-upper"\)/);
+  assert.match(appJs, /className\("sixteenth-rest-head-lower"\)/);
+  assert.match(appJs, /className\("sixteenth-rest-stem"\)/);
+  assert.match(appJs, /className\("sixteenth-rest-flag-upper"\)/);
+  assert.match(appJs, /className\("sixteenth-rest-flag-lower"\)/);
 });
 
 test("beat dots drive a four-count audible prep interaction before playback", () => {

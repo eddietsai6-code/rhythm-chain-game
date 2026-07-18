@@ -2,6 +2,7 @@ import {
   COUNT_IN_BEATS,
   DEFAULT_SOUND_ID,
   LEVEL_COUNT,
+  LEVEL_PAGES,
   SOUND_PRESETS,
   SPEED_OPTIONS,
   calculateChainBeats,
@@ -9,6 +10,7 @@ import {
   createTargetChain,
   evaluatePlayerChain,
   getLevelConfig,
+  getLevelPage,
   getPatternById,
   getUnlockedPatterns,
   resolvePlaybackBpm,
@@ -21,6 +23,7 @@ const REST_SYMBOLS = new Set(["𝄽", "𝄾", "𝄿"]);
 const svgNamespace = "http://www.w3.org/2000/svg";
 const selectors = {
   practiceCard: document.querySelector(".practice-card"),
+  pageSwitch: document.querySelector("#pageSwitch"),
   levelTitle: document.querySelector("#levelTitle"),
   levelMeta: document.querySelector("#levelMeta"),
   comboReadout: document.querySelector("#comboReadout"),
@@ -206,6 +209,7 @@ function loadLevel(levelNumber) {
 }
 
 function render() {
+  renderPageSwitch();
   renderLevelList();
   renderReadouts();
   renderChain(selectors.targetChain, state.targetChain, "target");
@@ -214,10 +218,26 @@ function render() {
   renderSlotPicker();
 }
 
+function renderPageSwitch() {
+  const currentPage = getLevelPage(state.level);
+  selectors.pageSwitch.replaceChildren(
+    ...LEVEL_PAGES.map((page) => {
+      const button = document.createElement("button");
+      button.className = "page-switch-button";
+      button.type = "button";
+      button.textContent = page.label;
+      button.setAttribute("aria-label", `第 ${page.label} 页`);
+      button.disabled = page.locked || page.startLevel > LEVEL_COUNT;
+      if (page.id === currentPage.id) button.classList.add("active");
+      button.addEventListener("click", () => loadLevel(page.startLevel));
+      return button;
+    })
+  );
+}
+
 function renderLevelList() {
   selectors.levelList.replaceChildren(
-    ...Array.from({ length: LEVEL_COUNT }, (_, index) => {
-      const level = index + 1;
+    ...getCurrentPageLevels().map((level) => {
       const button = document.createElement("button");
       button.className = "level-button";
       button.type = "button";
@@ -228,6 +248,13 @@ function renderLevelList() {
       button.addEventListener("click", () => loadLevel(level));
       return button;
     })
+  );
+}
+
+function getCurrentPageLevels() {
+  const currentPage = getLevelPage(state.level);
+  return Array.from({ length: LEVEL_COUNT }, (_, index) => index + 1).filter(
+    (level) => level >= currentPage.startLevel && level <= currentPage.endLevel
   );
 }
 
@@ -265,9 +292,11 @@ function renderReadouts() {
   const chainEntryStrong = selectors.chainEntryButton.querySelector("strong");
   const chainEntryLabel = selectors.chainEntryButton.querySelector("span");
   const filledCount = filledPlayerPatterns.length;
+  const currentPage = getLevelPage(state.level);
+  const pageEndLevel = Math.min(currentPage.endLevel, LEVEL_COUNT);
 
   selectors.practiceCard.dataset.comboTier = String(state.config.comboCount);
-  selectors.levelTitle.textContent = `第 ${state.level} / ${LEVEL_COUNT} 关`;
+  selectors.levelTitle.textContent = `第 ${state.level} / ${pageEndLevel} 关`;
   selectors.levelMeta.textContent = `${state.config.comboCount} 组合 / ${bpm} BPM`;
   selectors.comboReadout.textContent = `${filledCount} / ${state.config.comboCount}`;
   selectors.beatReadout.textContent = String(targetBeats);
@@ -440,7 +469,7 @@ function createPatternTile(pattern, options = {}) {
   if (options.active) button.classList.add("active");
   if (options.compact) button.classList.add("compact");
   if (pattern.beats > 1) button.classList.add("wide-rhythm");
-  if (Array.from(pattern.symbol).length > 2 || pattern.id === "fourSixteenths" || pattern.family === "syncopation") {
+  if (Array.from(pattern.symbol).length > 2 || pattern.id === "fourSixteenths" || pattern.family === "syncopation" || pattern.unlockLevel >= 41) {
     button.classList.add("dense-rhythm");
   }
 
@@ -478,6 +507,35 @@ function appendSymbolNodes(symbol, pattern) {
 
   if (pattern.glyph === "sixteenth-eighth-sixteenth" || pattern.glyph === "sixteenth-rest-three-sixteenths") {
     symbol.append(createSyncopationGlyph(pattern.glyph));
+    return;
+  }
+
+  if (
+    pattern.glyph === "eighth-rest-two-sixteenths" ||
+    pattern.glyph === "dotted-eighth-sixteenth" ||
+    pattern.glyph === "two-sixteenths-eighth-rest"
+  ) {
+    symbol.append(createAdvancedRhythmGlyph(pattern.glyph));
+    return;
+  }
+
+  if (
+    pattern.glyph === "eighth-triplet" ||
+    pattern.glyph === "triplet-rest-middle" ||
+    pattern.glyph === "sixteenth-rest-dotted-eighth"
+  ) {
+    symbol.append(createChallengeRhythmGlyph(pattern.glyph));
+    return;
+  }
+
+  if (
+    pattern.glyph === "quintuplet" ||
+    pattern.glyph === "sextuplet" ||
+    pattern.glyph === "quintuplet-rest-first" ||
+    pattern.glyph === "quintuplet-rest-middle" ||
+    pattern.glyph === "sextuplet-rest-middle"
+  ) {
+    symbol.append(createExpertRhythmGlyph(pattern.glyph));
     return;
   }
 
@@ -658,44 +716,9 @@ function createSyncopationGlyph(glyph) {
 
   if (glyph === "sixteenth-rest-three-sixteenths") {
     svg.append(
-      createSvgElement("circle", {
-        class: "sixteenth-rest-flag-upper syncopation-sixteenth-rest-flag-upper",
-        cx: "16",
-        cy: "16",
-        r: "5.5",
-        fill: "currentColor",
-      }),
-      createSvgElement("circle", {
-        class: "sixteenth-rest-flag-lower syncopation-sixteenth-rest-flag-lower",
-        cx: "23",
-        cy: "29",
-        r: "5.5",
-        fill: "currentColor",
-      }),
-      createSvgElement("path", {
-        class: "sixteenth-rest-stem syncopation-sixteenth-rest-stem",
-        d: "M30 7 C36 19 33 31 27 42 C24 48 20 54 16 58",
-        fill: "none",
-        stroke: "currentColor",
-        "stroke-width": "6",
-        "stroke-linecap": "round",
-        "stroke-linejoin": "round",
-      }),
-      createSvgElement("path", {
-        class: "syncopation-sixteenth-rest-hook-upper",
-        d: "M22 16 C31 19 36 25 33 32",
-        fill: "none",
-        stroke: "currentColor",
-        "stroke-width": "5",
-        "stroke-linecap": "round",
-      }),
-      createSvgElement("path", {
-        class: "syncopation-sixteenth-rest-hook-lower",
-        d: "M28 29 C36 33 37 41 30 48",
-        fill: "none",
-        stroke: "currentColor",
-        "stroke-width": "5",
-        "stroke-linecap": "round",
+      createStandardSixteenthRestGroup({
+        variant: "syncopation",
+        transform: "translate(1 1) scale(0.95)",
       }),
       createSvgElement("path", { d: "M48 12 L94 12 L94 19 L48 19 Z", fill: "currentColor" }),
       createSvgElement("path", { d: "M48 25 L94 25 L94 32 L48 32 Z", fill: "currentColor" }),
@@ -813,6 +836,407 @@ function createSyncopationGlyph(glyph) {
   return svg;
 }
 
+function createAdvancedRhythmGlyph(glyph) {
+  const svg = document.createElementNS(svgNamespace, "svg");
+  svg.classList.add("advanced-rhythm-glyph");
+  svg.classList.add(glyph);
+  svg.setAttribute("viewBox", "0 0 108 64");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+
+  if (glyph === "eighth-rest-two-sixteenths") {
+    svg.append(
+      createEighthRestGroup({ transform: "translate(0 4) scale(0.9)" }),
+      createSvgElement("path", { d: "M57 10 L98 10 L98 17 L57 17 Z", fill: "currentColor" }),
+      createSvgElement("path", { d: "M57 24 L98 24 L98 31 L57 31 Z", fill: "currentColor" }),
+      createSvgElement("line", {
+        x1: "57",
+        y1: "14",
+        x2: "57",
+        y2: "49",
+        stroke: "currentColor",
+        "stroke-width": "5",
+        "stroke-linecap": "round",
+      }),
+      createSvgElement("line", {
+        x1: "98",
+        y1: "14",
+        x2: "98",
+        y2: "49",
+        stroke: "currentColor",
+        "stroke-width": "5",
+        "stroke-linecap": "round",
+      }),
+      createNoteHead(49, 50),
+      createNoteHead(90, 50)
+    );
+    return svg;
+  }
+
+  if (glyph === "two-sixteenths-eighth-rest") {
+    svg.append(
+      createSvgElement("path", { d: "M25 10 L66 10 L66 17 L25 17 Z", fill: "currentColor" }),
+      createSvgElement("path", { d: "M25 24 L66 24 L66 31 L25 31 Z", fill: "currentColor" }),
+      createSvgElement("line", {
+        x1: "25",
+        y1: "14",
+        x2: "25",
+        y2: "49",
+        stroke: "currentColor",
+        "stroke-width": "5",
+        "stroke-linecap": "round",
+      }),
+      createSvgElement("line", {
+        x1: "66",
+        y1: "14",
+        x2: "66",
+        y2: "49",
+        stroke: "currentColor",
+        "stroke-width": "5",
+        "stroke-linecap": "round",
+      }),
+      createNoteHead(17, 50),
+      createNoteHead(58, 50),
+      createEighthRestGroup({ transform: "translate(76 5) scale(0.82)" })
+    );
+    return svg;
+  }
+
+  svg.append(
+    createSvgElement("path", { d: "M25 10 L95 10 L95 17 L25 17 Z", fill: "currentColor" }),
+    createSvgElement("path", { d: "M75 24 L95 24 L95 31 L75 31 Z", fill: "currentColor" }),
+    createSvgElement("line", {
+      x1: "25",
+      y1: "14",
+      x2: "25",
+      y2: "49",
+      stroke: "currentColor",
+      "stroke-width": "5",
+      "stroke-linecap": "round",
+    }),
+    createSvgElement("line", {
+      x1: "95",
+      y1: "14",
+      x2: "95",
+      y2: "49",
+      stroke: "currentColor",
+      "stroke-width": "5",
+      "stroke-linecap": "round",
+    }),
+    createNoteHead(17, 50),
+    createSvgElement("circle", { cx: "36", cy: "50", r: "4.2", fill: "currentColor" }),
+    createNoteHead(87, 50)
+  );
+  return svg;
+}
+
+function createChallengeRhythmGlyph(glyph) {
+  const svg = document.createElementNS(svgNamespace, "svg");
+  svg.classList.add("challenge-rhythm-glyph");
+  svg.classList.add(glyph);
+  svg.setAttribute("viewBox", "0 0 112 64");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+
+  if (glyph === "eighth-triplet") {
+    svg.append(
+      createTupletBracket(3, 12, 100),
+      createSvgElement("path", { d: "M28 22 L88 22 L88 29 L28 29 Z", fill: "currentColor" }),
+      createSvgElement("line", {
+        x1: "28",
+        y1: "25",
+        x2: "28",
+        y2: "50",
+        stroke: "currentColor",
+        "stroke-width": "5",
+        "stroke-linecap": "round",
+      }),
+      createSvgElement("line", {
+        x1: "58",
+        y1: "25",
+        x2: "58",
+        y2: "50",
+        stroke: "currentColor",
+        "stroke-width": "5",
+        "stroke-linecap": "round",
+      }),
+      createSvgElement("line", {
+        x1: "88",
+        y1: "25",
+        x2: "88",
+        y2: "50",
+        stroke: "currentColor",
+        "stroke-width": "5",
+        "stroke-linecap": "round",
+      }),
+      createNoteHead(20, 51),
+      createNoteHead(50, 51),
+      createNoteHead(80, 51)
+    );
+    return svg;
+  }
+
+  if (glyph === "triplet-rest-middle") {
+    svg.append(
+      createTupletBracket(3, 10, 102),
+      createSvgElement("path", { d: "M27 22 L90 22 L90 29 L27 29 Z", fill: "currentColor" }),
+      createSvgElement("line", {
+        x1: "27",
+        y1: "25",
+        x2: "27",
+        y2: "50",
+        stroke: "currentColor",
+        "stroke-width": "5",
+        "stroke-linecap": "round",
+      }),
+      createSvgElement("line", {
+        x1: "90",
+        y1: "25",
+        x2: "90",
+        y2: "50",
+        stroke: "currentColor",
+        "stroke-width": "5",
+        "stroke-linecap": "round",
+      }),
+      createNoteHead(19, 51),
+      createEighthRestGroup({ transform: "translate(43 21) scale(0.58)" }),
+      createNoteHead(82, 51)
+    );
+    return svg;
+  }
+
+  svg.append(
+    createStandardSixteenthRestGroup({ transform: "translate(3 2) scale(0.88)" }),
+    createSvgElement("line", {
+      x1: "76",
+      y1: "13",
+      x2: "76",
+      y2: "50",
+      stroke: "currentColor",
+      "stroke-width": "5",
+      "stroke-linecap": "round",
+    }),
+    createSvgElement("path", {
+      d: "M76 14 C92 22 95 35 83 45",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "5.8",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    }),
+    createNoteHead(68, 51),
+    createSvgElement("circle", { cx: "88", cy: "51", r: "4.2", fill: "currentColor" })
+  );
+  return svg;
+}
+
+function createExpertRhythmGlyph(glyph) {
+  const svg = document.createElementNS(svgNamespace, "svg");
+  svg.classList.add("expert-rhythm-glyph");
+  svg.classList.add(glyph);
+  svg.setAttribute("viewBox", "0 0 132 64");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+
+  const count = getExpertTupletCount(glyph);
+  const restIndices = new Set(getExpertTupletRestIndices(glyph));
+  const startX = 18;
+  const endX = 118;
+  const spacing = (endX - startX) / (count - 1);
+  const stemTop = 24;
+  const beamTop = 20;
+  const headY = 52;
+
+  svg.append(createTupletBracket(count, 9, 123));
+  svg.append(createSvgElement("path", { d: `M${startX + 8} ${beamTop} L${endX + 8} ${beamTop} L${endX + 8} ${beamTop + 7} L${startX + 8} ${beamTop + 7} Z`, fill: "currentColor" }));
+
+  for (let index = 0; index < count; index += 1) {
+    const headX = startX + index * spacing;
+    const stemX = headX + 8;
+    if (restIndices.has(index)) {
+      svg.append(createExpertTupletRest(headX, headY));
+      continue;
+    }
+
+    svg.append(
+      createSvgElement("line", {
+        x1: String(stemX),
+        y1: String(stemTop),
+        x2: String(stemX),
+        y2: String(headY),
+        stroke: "currentColor",
+        "stroke-width": "4.6",
+        "stroke-linecap": "round",
+      }),
+      createNoteHead(headX, headY)
+    );
+  }
+
+  return svg;
+}
+
+function getExpertTupletCount(glyph) {
+  return glyph === "sextuplet" || glyph === "sextuplet-rest-middle" ? 6 : 5;
+}
+
+function getExpertTupletRestIndices(glyph) {
+  if (glyph === "quintuplet-rest-first") return [0];
+  if (glyph === "quintuplet-rest-middle" || glyph === "sextuplet-rest-middle") return [2];
+  return [];
+}
+
+function createExpertTupletRest(headX, headY) {
+  return createStandardSixteenthRestGroup({
+    transform: `translate(${headX - 17} ${headY - 31}) scale(0.52)`,
+  });
+}
+
+function createTupletBracket(number, startX, endX) {
+  const centerX = (startX + endX) / 2;
+  const group = createSvgElement("g", { class: "tuplet-bracket" });
+  group.append(
+    createSvgElement("path", {
+      d: `M${startX} 16 V9 H${centerX - 14}`,
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "4",
+      "stroke-linecap": "square",
+      "stroke-linejoin": "miter",
+    }),
+    createSvgText(String(number), {
+      x: String(centerX),
+      y: "17",
+      "text-anchor": "middle",
+      fill: "currentColor",
+      "font-family": "Georgia, 'Times New Roman', serif",
+      "font-size": "30",
+      "font-weight": "700",
+    }),
+    createSvgElement("path", {
+      d: `M${centerX + 14} 9 H${endX} V16`,
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "4",
+      "stroke-linecap": "square",
+      "stroke-linejoin": "miter",
+    })
+  );
+  return group;
+}
+
+function createNoteHead(cx, cy) {
+  return createSvgElement("ellipse", {
+    cx: String(cx),
+    cy: String(cy),
+    rx: "9",
+    ry: "6",
+    fill: "currentColor",
+    transform: `rotate(-18 ${cx} ${cy})`,
+  });
+}
+
+function createEighthRestGroup(options = {}) {
+  const groupAttributes = { class: "standard-eighth-rest" };
+  if (options.transform) groupAttributes.transform = options.transform;
+
+  const group = createSvgElement("g", groupAttributes);
+  group.append(
+    createSvgElement("ellipse", {
+      class: "eighth-rest-head",
+      cx: "19",
+      cy: "20",
+      rx: "7",
+      ry: "5.6",
+      fill: "currentColor",
+      transform: "rotate(-12 19 20)",
+    }),
+    createSvgElement("path", {
+      class: "eighth-rest-stem",
+      d: "M29 9 C27 23 22 42 13 58",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "6.6",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    }),
+    createSvgElement("path", {
+      class: "eighth-rest-flag",
+      d: "M24 20 C31 20 35 15 36 9",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "5.8",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    })
+  );
+
+  return group;
+}
+
+function createStandardSixteenthRestGroup(options = {}) {
+  const variantPrefix = options.variant ? `${options.variant}-` : "";
+  const classNames = ["standard-sixteenth-rest"];
+  if (options.variant) classNames.push(`${options.variant}-sixteenth-rest`);
+
+  const groupAttributes = { class: classNames.join(" ") };
+  if (options.transform) groupAttributes.transform = options.transform;
+
+  const group = createSvgElement("g", groupAttributes);
+  const className = (baseClass) => [baseClass, variantPrefix ? `${variantPrefix}${baseClass}` : ""]
+    .filter(Boolean)
+    .join(" ");
+
+  group.append(
+    createSvgElement("ellipse", {
+      class: className("sixteenth-rest-head-upper"),
+      cx: "18",
+      cy: "18",
+      rx: "6.8",
+      ry: "5.3",
+      fill: "currentColor",
+      transform: "rotate(-12 18 18)",
+    }),
+    createSvgElement("ellipse", {
+      class: className("sixteenth-rest-head-lower"),
+      cx: "13",
+      cy: "34",
+      rx: "6.8",
+      ry: "5.3",
+      fill: "currentColor",
+      transform: "rotate(-12 13 34)",
+    }),
+    createSvgElement("path", {
+      class: className("sixteenth-rest-stem"),
+      d: "M36 7 C32 22 28 39 17 60",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "6.6",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    }),
+    createSvgElement("path", {
+      class: className("sixteenth-rest-flag-upper"),
+      d: "M22 18 C29 18 34 13 36 7",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "5.8",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    }),
+    createSvgElement("path", {
+      class: className("sixteenth-rest-flag-lower"),
+      d: "M17 34 C25 35 31 29 33 22",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "5.8",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    })
+  );
+
+  return group;
+}
+
 function createRestGlyph(restSymbol) {
   const svg = document.createElementNS(svgNamespace, "svg");
   svg.classList.add("rest-glyph");
@@ -837,35 +1261,7 @@ function createRestGlyph(restSymbol) {
 
   if (restSymbol === "𝄿") {
     svg.classList.add("sixteenth-rest-glyph");
-    svg.append(
-      createSvgElement("circle", { class: "sixteenth-rest-flag-upper", cx: "17", cy: "17", r: "5.8", fill: "currentColor" }),
-      createSvgElement("circle", { class: "sixteenth-rest-flag-lower", cx: "23", cy: "31", r: "5.8", fill: "currentColor" }),
-      createSvgElement("path", {
-        class: "sixteenth-rest-stem",
-        d: "M31 8 C37 20 34 32 28 43 C25 49 21 54 17 59",
-        fill: "none",
-        stroke: "currentColor",
-        "stroke-width": "6.5",
-        "stroke-linecap": "round",
-        "stroke-linejoin": "round",
-      }),
-      createSvgElement("path", {
-        class: "sixteenth-rest-hook-upper",
-        d: "M23 17 C33 20 38 26 34 33",
-        fill: "none",
-        stroke: "currentColor",
-        "stroke-width": "5.5",
-        "stroke-linecap": "round",
-      }),
-      createSvgElement("path", {
-        class: "sixteenth-rest-hook-lower",
-        d: "M29 31 C38 35 39 43 31 50",
-        fill: "none",
-        stroke: "currentColor",
-        "stroke-width": "5.5",
-        "stroke-linecap": "round",
-      })
-    );
+    svg.append(createStandardSixteenthRestGroup());
     return svg;
   }
 
@@ -886,6 +1282,12 @@ function createRestGlyph(restSymbol) {
 function createSvgElement(tagName, attributes) {
   const element = document.createElementNS(svgNamespace, tagName);
   Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
+  return element;
+}
+
+function createSvgText(text, attributes) {
+  const element = createSvgElement("text", attributes);
+  element.textContent = text;
   return element;
 }
 

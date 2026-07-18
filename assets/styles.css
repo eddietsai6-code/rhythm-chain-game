@@ -74,6 +74,13 @@ button {
   display: none;
 }
 
+.title-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 h1,
 p {
   margin: 0;
@@ -86,6 +93,40 @@ h1 {
   font-weight: 500;
   line-height: 0.95;
   letter-spacing: 0;
+}
+
+.page-switch {
+  display: grid;
+  gap: 3px;
+  transform: translateY(-1px);
+}
+
+.page-switch-button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 20px;
+  border: 0;
+  border-radius: 8px;
+  background: #eeeeee;
+  color: #111111;
+  cursor: pointer;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.07);
+}
+
+.page-switch-button.active {
+  background: var(--blue-dot);
+  color: #ffffff;
+  box-shadow: 0 3px 8px rgba(51, 174, 234, 0.24);
+}
+
+.page-switch-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.34;
 }
 
 .brand-lockup p,
@@ -449,6 +490,30 @@ h1 {
   overflow: visible;
 }
 
+.advanced-rhythm-glyph {
+  width: 1.74em;
+  height: 1em;
+  flex: 0 0 auto;
+  color: currentColor;
+  overflow: visible;
+}
+
+.challenge-rhythm-glyph {
+  width: 1.82em;
+  height: 1em;
+  flex: 0 0 auto;
+  color: currentColor;
+  overflow: visible;
+}
+
+.expert-rhythm-glyph {
+  width: 2.06em;
+  height: 1em;
+  flex: 0 0 auto;
+  color: currentColor;
+  overflow: visible;
+}
+
 .rhythm-card.dense-rhythm .note-symbol {
   font-size: 34px;
 }
@@ -483,6 +548,16 @@ h1 {
 
 .practice-card[data-combo-tier="16"] h1 {
   font-size: 44px;
+}
+
+.practice-card[data-combo-tier="16"] .page-switch {
+  gap: 2px;
+}
+
+.practice-card[data-combo-tier="16"] .page-switch-button {
+  width: 26px;
+  height: 19px;
+  font-size: 11px;
 }
 
 .practice-card[data-combo-tier="16"] .brand-lockup p,
@@ -540,6 +615,18 @@ h1 {
 
 .practice-card[data-combo-tier="16"] .syncopation-glyph {
   width: 1.46em;
+}
+
+.practice-card[data-combo-tier="16"] .advanced-rhythm-glyph {
+  width: 1.52em;
+}
+
+.practice-card[data-combo-tier="16"] .challenge-rhythm-glyph {
+  width: 1.56em;
+}
+
+.practice-card[data-combo-tier="16"] .expert-rhythm-glyph {
+  width: 1.64em;
 }
 
 .slot-picker .rhythm-card.dense-rhythm .note-symbol {

@@ -1,4 +1,4 @@
-export const LEVEL_COUNT = 40;
+export const LEVEL_COUNT = 80;
 export const SNARE_TONE = "snare";
 export const DEFAULT_SOUND_ID = SNARE_TONE;
 export const SOUND_PRESETS = deepFreeze([
@@ -21,6 +21,18 @@ const MIN_COMBO_COUNT = 4;
 const MAX_COMBO_COUNT = 16;
 const DEFAULT_BPM = 80;
 export const COUNT_IN_BEATS = 4;
+export const LEVEL_PAGES = deepFreeze([
+  { id: "foundation", label: "I", startLevel: 1, endLevel: 40, locked: false },
+  { id: "advanced", label: "II", startLevel: 41, endLevel: 50, locked: false },
+  { id: "challenge", label: "III", startLevel: 51, endLevel: 60, locked: false },
+  { id: "expert", label: "IV", startLevel: 61, endLevel: 70, locked: false },
+  { id: "master", label: "V", startLevel: 71, endLevel: 80, locked: false },
+]);
+const ADVANCED_UNLOCK_LEVEL = 41;
+const CHALLENGE_UNLOCK_LEVEL = 51;
+const EXPERT_UNLOCK_LEVEL = 61;
+const MASTER_UNLOCK_LEVEL = 71;
+const MAX_PAGE_NEW_PATTERNS_PER_CHAIN = 7;
 
 function deepFreeze(value) {
   if (Array.isArray(value)) {
@@ -182,6 +194,178 @@ const PATTERN_DEFINITIONS = [
     description: "Rest on the beat, then play the remaining three sixteenth subdivisions.",
     hits: [hit(0.25, "wood", 0.78), hit(0.5, "stick", 0.84), hit(0.75, "wood", 0.76)],
   },
+  {
+    id: "eighthRestTwoSixteenths",
+    label: "Eighth rest + two sixteenths",
+    name: "八分休止后两个十六",
+    symbol: "𝄾♬",
+    glyph: "eighth-rest-two-sixteenths",
+    family: "rests",
+    color: "lime",
+    unlockLevel: ADVANCED_UNLOCK_LEVEL,
+    difficulty: 6,
+    beats: 1,
+    syllables: "shh-DI-MI",
+    description: "Rest through the first half, then play two sixteenth notes.",
+    hits: [hit(0.5, "wood", 0.78), hit(0.75, "stick", 0.8)],
+  },
+  {
+    id: "dottedEighthSixteenth",
+    label: "Dotted eighth + sixteenth",
+    name: "附点八分加十六",
+    symbol: "♪.♬",
+    glyph: "dotted-eighth-sixteenth",
+    family: "syncopation",
+    color: "violet",
+    unlockLevel: ADVANCED_UNLOCK_LEVEL,
+    difficulty: 6,
+    beats: 1,
+    syllables: "TA---MI",
+    description: "Hold a dotted eighth, then play the last sixteenth.",
+    hits: [hit(0, "stick", 0.88, 0.18), hit(0.75, "wood", 0.8)],
+  },
+  {
+    id: "twoSixteenthsEighthRest",
+    label: "Two sixteenths + eighth rest",
+    name: "两个十六后八分休止",
+    symbol: "♬𝄾",
+    glyph: "two-sixteenths-eighth-rest",
+    family: "rests",
+    color: "gold",
+    unlockLevel: ADVANCED_UNLOCK_LEVEL,
+    difficulty: 6,
+    beats: 1,
+    syllables: "TA-KA-shh",
+    description: "Play two sixteenths, then leave the second half silent.",
+    hits: [hit(0, "stick", 0.84), hit(0.25, "wood", 0.78)],
+  },
+  {
+    id: "eighthTriplet",
+    label: "Eighth-note triplet",
+    name: "三个八分三连音",
+    symbol: "3♫",
+    glyph: "eighth-triplet",
+    family: "tuplets",
+    color: "violet",
+    unlockLevel: CHALLENGE_UNLOCK_LEVEL,
+    difficulty: 7,
+    beats: 1,
+    syllables: "TA-KI-TA",
+    description: "Three equal triplet sounds inside one beat.",
+    hits: [hit(0, "stick", 0.84), hit(1 / 3, "wood", 0.78), hit(2 / 3, "stick", 0.8)],
+  },
+  {
+    id: "tripletRestMiddle",
+    label: "Triplet with middle rest",
+    name: "中间休止三连音",
+    symbol: "3♪𝄾♪",
+    glyph: "triplet-rest-middle",
+    family: "tuplets",
+    color: "lime",
+    unlockLevel: CHALLENGE_UNLOCK_LEVEL,
+    difficulty: 7,
+    beats: 1,
+    syllables: "TA-shh-TA",
+    description: "Triplet rhythm with the middle subdivision silent.",
+    hits: [hit(0, "stick", 0.84), hit(2 / 3, "wood", 0.8)],
+  },
+  {
+    id: "sixteenthRestDottedEighth",
+    label: "Sixteenth rest + dotted eighth",
+    name: "十六休止后附点八分",
+    symbol: "𝄿♪.",
+    glyph: "sixteenth-rest-dotted-eighth",
+    family: "rests",
+    color: "silver",
+    unlockLevel: CHALLENGE_UNLOCK_LEVEL,
+    difficulty: 7,
+    beats: 1,
+    syllables: "shh-TA---",
+    description: "Rest on the first sixteenth, then hold a dotted eighth.",
+    hits: [hit(0.25, "stick", 0.88, 0.18)],
+  },
+  {
+    id: "quintuplet",
+    label: "Five-note tuplet",
+    name: "五连音",
+    symbol: "5♬",
+    glyph: "quintuplet",
+    family: "tuplets",
+    color: "orange",
+    unlockLevel: EXPERT_UNLOCK_LEVEL,
+    difficulty: 8,
+    beats: 1,
+    syllables: "TA-KA-DI-MI-NA",
+    description: "Five equal sounds inside one beat.",
+    hits: [hit(0, "stick", 0.84), hit(0.2, "wood", 0.76), hit(0.4, "stick", 0.78), hit(0.6, "wood", 0.76), hit(0.8, "stick", 0.8)],
+  },
+  {
+    id: "sextuplet",
+    label: "Six-note tuplet",
+    name: "六连音",
+    symbol: "6♬",
+    glyph: "sextuplet",
+    family: "tuplets",
+    color: "blue",
+    unlockLevel: EXPERT_UNLOCK_LEVEL,
+    difficulty: 8,
+    beats: 1,
+    syllables: "TA-KA-DI-MI-TA-KA",
+    description: "Six equal sounds inside one beat.",
+    hits: [
+      hit(0, "stick", 0.84),
+      hit(1 / 6, "wood", 0.74),
+      hit(2 / 6, "stick", 0.76),
+      hit(3 / 6, "wood", 0.74),
+      hit(4 / 6, "stick", 0.76),
+      hit(5 / 6, "wood", 0.78),
+    ],
+  },
+  {
+    id: "quintupletRestFirst",
+    label: "Quintuplet first rest",
+    name: "五连音第一位休止",
+    symbol: "5𝄿♬",
+    glyph: "quintuplet-rest-first",
+    family: "tuplets",
+    color: "gold",
+    unlockLevel: MASTER_UNLOCK_LEVEL,
+    difficulty: 9,
+    beats: 1,
+    syllables: "shh-KA-DI-MI-NA",
+    description: "Rest on the first quintuplet subdivision, then play four equal sounds.",
+    hits: [hit(0.2, "wood", 0.78), hit(0.4, "stick", 0.78), hit(0.6, "wood", 0.76), hit(0.8, "stick", 0.8)],
+  },
+  {
+    id: "quintupletRestMiddle",
+    label: "Quintuplet middle rest",
+    name: "五连音中间休止",
+    symbol: "5♬𝄿♬",
+    glyph: "quintuplet-rest-middle",
+    family: "tuplets",
+    color: "orange",
+    unlockLevel: MASTER_UNLOCK_LEVEL,
+    difficulty: 9,
+    beats: 1,
+    syllables: "TA-KA-shh-MI-NA",
+    description: "A quintuplet with the center subdivision silent.",
+    hits: [hit(0, "stick", 0.84), hit(0.2, "wood", 0.76), hit(0.6, "wood", 0.76), hit(0.8, "stick", 0.8)],
+  },
+  {
+    id: "sextupletRestMiddle",
+    label: "Sextuplet middle rest",
+    name: "六连音中间休止",
+    symbol: "6♬𝄿♬",
+    glyph: "sextuplet-rest-middle",
+    family: "tuplets",
+    color: "violet",
+    unlockLevel: MASTER_UNLOCK_LEVEL,
+    difficulty: 9,
+    beats: 1,
+    syllables: "TA-KA-shh-MI-TA-KA",
+    description: "A sextuplet with one inner subdivision silent.",
+    hits: [hit(0, "stick", 0.84), hit(1 / 6, "wood", 0.74), hit(3 / 6, "wood", 0.74), hit(4 / 6, "stick", 0.76), hit(5 / 6, "wood", 0.78)],
+  },
 ];
 
 const THEORY_SAFE_PATTERN_ORDER = [
@@ -195,6 +379,17 @@ const THEORY_SAFE_PATTERN_ORDER = [
   "twoSixteenthsEighth",
   "sixteenthEighthSixteenth",
   "sixteenthRestThreeSixteenths",
+  "eighthRestTwoSixteenths",
+  "dottedEighthSixteenth",
+  "twoSixteenthsEighthRest",
+  "eighthTriplet",
+  "tripletRestMiddle",
+  "sixteenthRestDottedEighth",
+  "quintuplet",
+  "sextuplet",
+  "quintupletRestFirst",
+  "quintupletRestMiddle",
+  "sextupletRestMiddle",
 ];
 
 export const RHYTHM_PATTERNS = deepFreeze(
@@ -219,6 +414,12 @@ export function getLevelConfig(levelNumber) {
   return { ...LEVELS[level - 1] };
 }
 
+export function getLevelPage(levelNumber) {
+  const level = Math.max(1, Math.trunc(Number(levelNumber) || 1));
+  const page = LEVEL_PAGES.find((pageConfig) => level >= pageConfig.startLevel && level <= pageConfig.endLevel) || LEVEL_PAGES.at(-1);
+  return { ...page };
+}
+
 export function getUnlockedPatterns(levelOrConfig) {
   const level = typeof levelOrConfig === "object" ? levelOrConfig.level : levelOrConfig;
   const levelNumber = getLevelConfig(level).level;
@@ -233,18 +434,78 @@ export function createTargetChain(levelConfig, options = {}) {
   );
   const random = options.random || seededRandom(config.seed);
   const chain = [];
+  let pageNewPatternCount = 0;
+  let consecutivePageNewPatternCount = 0;
+  const pageNewUnlockLevel = getCurrentPageNewUnlockLevel(config.level);
+  const pageNewPool = pool.filter((pattern) => isPageNewPattern(pattern, pageNewUnlockLevel));
+  const minPageNewPatternCount =
+    Number.isFinite(pageNewUnlockLevel) && pageNewPool.length > 0
+      ? Math.min(pageNewPool.length, 1 + Math.floor((config.level - pageNewUnlockLevel) / 4))
+      : 0;
+  const maxPageNewPatternCount = Number.isFinite(pageNewUnlockLevel)
+    ? Math.min(MAX_PAGE_NEW_PATTERNS_PER_CHAIN, Math.floor(config.comboCount * 0.44))
+    : Infinity;
 
   for (let index = 0; index < config.comboCount; index += 1) {
     const previousPattern = chain.length > 0 ? getPatternById(chain.at(-1)) : null;
-    const filteredPool =
+    const nonRestLimitedPool =
       previousPattern?.family === "rests"
         ? pool.filter((pattern) => pattern.family !== "rests")
         : pool;
+    const filteredPool = applyPageNewPatternMix(
+      nonRestLimitedPool,
+      config,
+      index,
+      pageNewUnlockLevel,
+      pageNewPatternCount,
+      consecutivePageNewPatternCount,
+      minPageNewPatternCount,
+      maxPageNewPatternCount
+    );
     const selected = chooseWeightedPattern(filteredPool, random, config.level, index);
     chain.push(selected.id);
+    if (isPageNewPattern(selected, pageNewUnlockLevel)) {
+      pageNewPatternCount += 1;
+      consecutivePageNewPatternCount += 1;
+    } else {
+      consecutivePageNewPatternCount = 0;
+    }
   }
 
   return chain;
+}
+
+function applyPageNewPatternMix(pool, config, index, pageNewUnlockLevel, pageNewPatternCount, consecutivePageNewPatternCount, minPageNewPatternCount, maxPageNewPatternCount) {
+  if (!Number.isFinite(pageNewUnlockLevel)) return pool;
+
+  const legacyPool = pool.filter((pattern) => !isPageNewPattern(pattern, pageNewUnlockLevel));
+  const pageNewPool = pool.filter((pattern) => isPageNewPattern(pattern, pageNewUnlockLevel));
+  if (pageNewPool.length === 0 || legacyPool.length === 0) return pool;
+
+  const remainingSlots = config.comboCount - index;
+  const requiredPageNewPatterns = Math.max(0, minPageNewPatternCount - pageNewPatternCount);
+
+  if (requiredPageNewPatterns > 0 && remainingSlots <= requiredPageNewPatterns) {
+    return pageNewPool;
+  }
+
+  if (pageNewPatternCount >= maxPageNewPatternCount || consecutivePageNewPatternCount >= 2) {
+    return legacyPool;
+  }
+
+  return pool;
+}
+
+function getCurrentPageNewUnlockLevel(level) {
+  if (level >= MASTER_UNLOCK_LEVEL) return MASTER_UNLOCK_LEVEL;
+  if (level >= EXPERT_UNLOCK_LEVEL) return EXPERT_UNLOCK_LEVEL;
+  if (level >= CHALLENGE_UNLOCK_LEVEL) return CHALLENGE_UNLOCK_LEVEL;
+  if (level >= ADVANCED_UNLOCK_LEVEL) return ADVANCED_UNLOCK_LEVEL;
+  return Infinity;
+}
+
+function isPageNewPattern(pattern, pageNewUnlockLevel) {
+  return Number.isFinite(pageNewUnlockLevel) && pattern.unlockLevel >= pageNewUnlockLevel;
 }
 
 export function scheduleChainEvents(chain, options = {}) {
