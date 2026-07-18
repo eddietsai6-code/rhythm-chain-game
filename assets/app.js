@@ -39,7 +39,6 @@ const selectors = {
   slotPickerTitle: document.querySelector("#slotPickerTitle"),
   slotPickerGrid: document.querySelector("#slotPickerGrid"),
   closeSlotPickerButton: document.querySelector("#closeSlotPickerButton"),
-  targetBeatCount: document.querySelector("#targetBeatCount"),
   playerBeatCount: document.querySelector("#playerBeatCount"),
   statusText: document.querySelector("#statusText"),
   drillLabel: document.querySelector("#drillLabel"),
@@ -225,8 +224,14 @@ function renderPageSwitch() {
       const button = document.createElement("button");
       button.className = "page-switch-button";
       button.type = "button";
-      button.textContent = page.label;
-      button.setAttribute("aria-label", `第 ${page.label} 页`);
+      const roman = document.createElement("span");
+      roman.className = "page-switch-roman";
+      roman.textContent = page.label;
+      const stage = document.createElement("span");
+      stage.className = "page-switch-stage";
+      stage.textContent = page.name;
+      button.replaceChildren(roman, stage);
+      button.setAttribute("aria-label", `${page.name} ${page.startLevel}-${page.endLevel}`);
       button.disabled = page.locked || page.startLevel > LEVEL_COUNT;
       if (page.id === currentPage.id) button.classList.add("active");
       button.addEventListener("click", () => loadLevel(page.startLevel));
@@ -301,7 +306,6 @@ function renderReadouts() {
   selectors.comboReadout.textContent = `${filledCount} / ${state.config.comboCount}`;
   selectors.beatReadout.textContent = String(targetBeats);
   selectors.accuracyReadout.textContent = accuracy;
-  selectors.targetBeatCount.textContent = `${targetBeats} 拍`;
   selectors.playerBeatCount.textContent = `${playerBeats} 拍`;
   selectors.chainEntryButton.disabled = filledCount >= state.config.comboCount;
   selectors.chainEntryButton.setAttribute(

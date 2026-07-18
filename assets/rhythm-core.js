@@ -22,11 +22,8 @@ const MAX_COMBO_COUNT = 16;
 const DEFAULT_BPM = 80;
 export const COUNT_IN_BEATS = 4;
 export const LEVEL_PAGES = deepFreeze([
-  { id: "foundation", label: "I", startLevel: 1, endLevel: 40, locked: false },
-  { id: "advanced", label: "II", startLevel: 41, endLevel: 50, locked: false },
-  { id: "challenge", label: "III", startLevel: 51, endLevel: 60, locked: false },
-  { id: "expert", label: "IV", startLevel: 61, endLevel: 70, locked: false },
-  { id: "master", label: "V", startLevel: 71, endLevel: 80, locked: false },
+  { id: "foundation", label: "I", name: "初级", startLevel: 1, endLevel: 40, locked: false },
+  { id: "intermediate", label: "II", name: "中级", startLevel: 41, endLevel: 80, locked: false },
 ]);
 const ADVANCED_UNLOCK_LEVEL = 41;
 const CHALLENGE_UNLOCK_LEVEL = 51;

@@ -93,12 +93,17 @@ test("title area exposes roman numeral page switches", () => {
   assert.match(appJs, /LEVEL_PAGES/);
   assert.match(appJs, /pageSwitch:\s*document\.querySelector\("#pageSwitch"\)/);
   assert.match(appJs, /function renderPageSwitch\(\)/);
-  assert.match(appJs, /button\.textContent = page\.label/);
+  assert.match(appJs, /roman\.className = "page-switch-roman"/);
+  assert.match(appJs, /stage\.className = "page-switch-stage"/);
+  assert.match(appJs, /roman\.textContent = page\.label/);
+  assert.match(appJs, /stage\.textContent = page\.name/);
+  assert.match(appJs, /button\.replaceChildren\(roman,\s*stage\)/);
   assert.match(appJs, /page\.locked \|\| page\.startLevel > LEVEL_COUNT/);
   assert.match(appJs, /loadLevel\(page\.startLevel\)/);
-  assert.match(appJs, /button\.setAttribute\("aria-label", `第 \$\{page\.label\} 页`\)/);
+  assert.match(appJs, /button\.setAttribute\("aria-label", `\$\{page\.name\} \$\{page\.startLevel\}-\$\{page\.endLevel\}`\)/);
   assert.match(css, /\.page-switch\s*{/);
   assert.match(css, /\.page-switch-button\.active\s*{/);
+  assert.match(css, /\.page-switch-stage\s*{/);
 });
 
 test("level jump panel is scoped to the current roman page", () => {
@@ -106,6 +111,12 @@ test("level jump panel is scoped to the current roman page", () => {
   assert.match(appJs, /getCurrentPageLevels\(\)\.map\(\(level\) =>/);
   assert.match(appJs, /const currentPage = getLevelPage\(state\.level\)/);
   assert.match(appJs, /level >= currentPage\.startLevel && level <= currentPage\.endLevel/);
+});
+
+test("target area hides the redundant total beat count", () => {
+  assert.doesNotMatch(html, /id="targetBeatCount"/);
+  assert.doesNotMatch(appJs, /targetBeatCount:\s*document\.querySelector/);
+  assert.doesNotMatch(appJs, /selectors\.targetBeatCount\.textContent/);
 });
 
 test("main game keeps one app-style viewport across desktop tablet and phone", () => {

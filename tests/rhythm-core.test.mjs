@@ -24,19 +24,16 @@ import {
   scheduleCountInEvents,
 } from "../assets/rhythm-core.js";
 
-test("buildLevels creates 80 levels across roman-numbered pages", () => {
+test("buildLevels creates 80 levels across two staged roman-numbered pages", () => {
   const levels = buildLevels();
 
   assert.equal(LEVEL_COUNT, 80);
   assert.equal(levels.length, 80);
   assert.deepEqual(
-    LEVEL_PAGES.map((page) => ({ label: page.label, startLevel: page.startLevel, endLevel: page.endLevel, locked: page.locked })),
+    LEVEL_PAGES.map((page) => ({ label: page.label, name: page.name, startLevel: page.startLevel, endLevel: page.endLevel, locked: page.locked })),
     [
-      { label: "I", startLevel: 1, endLevel: 40, locked: false },
-      { label: "II", startLevel: 41, endLevel: 50, locked: false },
-      { label: "III", startLevel: 51, endLevel: 60, locked: false },
-      { label: "IV", startLevel: 61, endLevel: 70, locked: false },
-      { label: "V", startLevel: 71, endLevel: 80, locked: false },
+      { label: "I", name: "初级", startLevel: 1, endLevel: 40, locked: false },
+      { label: "II", name: "中级", startLevel: 41, endLevel: 80, locked: false },
     ]
   );
 
@@ -51,9 +48,9 @@ test("buildLevels creates 80 levels across roman-numbered pages", () => {
   assert.equal(getComboCountForLevel(80), 16);
   assert.equal(getLevelPage(37).label, "I");
   assert.equal(getLevelPage(41).label, "II");
-  assert.equal(getLevelPage(51).label, "III");
-  assert.equal(getLevelPage(61).label, "IV");
-  assert.equal(getLevelPage(71).label, "V");
+  assert.equal(getLevelPage(51).label, "II");
+  assert.equal(getLevelPage(61).label, "II");
+  assert.equal(getLevelPage(71).label, "II");
 });
 
 test("unlocked rhythm cards become more complex across the course", () => {
