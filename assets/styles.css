@@ -47,6 +47,7 @@ button {
 }
 
 .practice-card {
+  position: relative;
   width: min(100%, var(--app-width));
   margin: 0 auto;
   background: var(--paper);
@@ -97,56 +98,63 @@ h1 {
 }
 
 .page-switch {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
+  position: absolute;
+  top: 18px;
+  right: 16px;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  width: 54px;
+  height: 28px;
   padding: 3px;
   border-radius: 999px;
-  background: #f0f0f0;
-  transform: translateY(-1px);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+  background: #f2f2f2;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.page-switch::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--blue-dot);
+  box-shadow: inset -3px -5px 0 rgba(0, 0, 0, 0.08), 0 3px 7px rgba(51, 174, 234, 0.32);
+  transition: transform 170ms cubic-bezier(0.2, 0.8, 0.2, 1), background 170ms ease;
+}
+
+.page-switch[data-active-index="1"]::before {
+  transform: translateX(26px);
 }
 
 .page-switch-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-width: 58px;
-  height: 28px;
-  padding: 0 9px;
+  position: relative;
+  z-index: 1;
+  width: 24px;
+  height: 22px;
+  padding: 0;
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: #111111;
   cursor: pointer;
-  font-weight: 900;
-  line-height: 1;
-  white-space: nowrap;
-  transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
-}
-
-.page-switch-roman {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.page-switch-stage {
-  font-size: 11px;
-  font-weight: 900;
+  color: transparent;
 }
 
 .page-switch-button.active {
-  background: var(--blue-dot);
-  color: #ffffff;
-  box-shadow: 0 3px 8px rgba(51, 174, 234, 0.24);
-  transform: translateY(-1px);
+  background: transparent;
+  box-shadow: none;
 }
 
 .page-switch-button:disabled {
   cursor: not-allowed;
   opacity: 0.34;
+}
+
+.page-switch-button:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 4px;
 }
 
 .brand-lockup p,
@@ -571,22 +579,25 @@ h1 {
 }
 
 .practice-card[data-combo-tier="16"] .page-switch {
-  gap: 2px;
-  padding: 2px;
+  top: 14px;
+  right: 14px;
+  width: 50px;
+  height: 26px;
+  padding: 3px;
+}
+
+.practice-card[data-combo-tier="16"] .page-switch::before {
+  width: 20px;
+  height: 20px;
+}
+
+.practice-card[data-combo-tier="16"] .page-switch[data-active-index="1"]::before {
+  transform: translateX(24px);
 }
 
 .practice-card[data-combo-tier="16"] .page-switch-button {
-  min-width: 52px;
-  height: 26px;
-  padding: 0 7px;
-}
-
-.practice-card[data-combo-tier="16"] .page-switch-roman {
-  font-size: 12px;
-}
-
-.practice-card[data-combo-tier="16"] .page-switch-stage {
-  font-size: 10px;
+  width: 22px;
+  height: 20px;
 }
 
 .practice-card[data-combo-tier="16"] .brand-lockup p,

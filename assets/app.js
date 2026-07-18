@@ -219,18 +219,13 @@ function render() {
 
 function renderPageSwitch() {
   const currentPage = getLevelPage(state.level);
+  const currentPageIndex = LEVEL_PAGES.findIndex((page) => page.id === currentPage.id);
+  selectors.pageSwitch.dataset.activeIndex = String(Math.max(0, currentPageIndex));
   selectors.pageSwitch.replaceChildren(
     ...LEVEL_PAGES.map((page) => {
       const button = document.createElement("button");
       button.className = "page-switch-button";
       button.type = "button";
-      const roman = document.createElement("span");
-      roman.className = "page-switch-roman";
-      roman.textContent = page.label;
-      const stage = document.createElement("span");
-      stage.className = "page-switch-stage";
-      stage.textContent = page.name;
-      button.replaceChildren(roman, stage);
       button.setAttribute("aria-label", `${page.name} ${page.startLevel}-${page.endLevel}`);
       button.disabled = page.locked || page.startLevel > LEVEL_COUNT;
       if (page.id === currentPage.id) button.classList.add("active");

@@ -87,23 +87,25 @@ test("center level label opens a compact level jump panel", () => {
   assert.match(css, /\.level-grid\s*{/);
 });
 
-test("title area exposes roman numeral page switches", () => {
+test("title area exposes a silent corner stage switch", () => {
   assert.match(html, /id="pageSwitch"/);
   assert.match(html, /aria-label="切换难度页面"/);
   assert.match(appJs, /LEVEL_PAGES/);
   assert.match(appJs, /pageSwitch:\s*document\.querySelector\("#pageSwitch"\)/);
   assert.match(appJs, /function renderPageSwitch\(\)/);
-  assert.match(appJs, /roman\.className = "page-switch-roman"/);
-  assert.match(appJs, /stage\.className = "page-switch-stage"/);
-  assert.match(appJs, /roman\.textContent = page\.label/);
-  assert.match(appJs, /stage\.textContent = page\.name/);
-  assert.match(appJs, /button\.replaceChildren\(roman,\s*stage\)/);
+  assert.match(appJs, /const currentPageIndex = LEVEL_PAGES\.findIndex/);
+  assert.match(appJs, /selectors\.pageSwitch\.dataset\.activeIndex = String\(Math\.max\(0,\s*currentPageIndex\)\)/);
+  assert.doesNotMatch(appJs, /textContent = page\.label/);
+  assert.doesNotMatch(appJs, /textContent = page\.name/);
   assert.match(appJs, /page\.locked \|\| page\.startLevel > LEVEL_COUNT/);
   assert.match(appJs, /loadLevel\(page\.startLevel\)/);
   assert.match(appJs, /button\.setAttribute\("aria-label", `\$\{page\.name\} \$\{page\.startLevel\}-\$\{page\.endLevel\}`\)/);
   assert.match(css, /\.page-switch\s*{/);
+  assert.match(css, /\.page-switch::before\s*{/);
+  assert.match(css, /\.page-switch\[data-active-index="1"\]::before\s*{/);
   assert.match(css, /\.page-switch-button\.active\s*{/);
-  assert.match(css, /\.page-switch-stage\s*{/);
+  assert.doesNotMatch(css, /\.page-switch-roman/);
+  assert.doesNotMatch(css, /\.page-switch-stage/);
 });
 
 test("level jump panel is scoped to the current roman page", () => {
