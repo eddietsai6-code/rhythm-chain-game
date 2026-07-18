@@ -158,6 +158,7 @@ test("rest symbols render with app-native glyphs instead of mobile-unsafe text",
   assert.match(appJs, /function appendSymbolNodes\(symbol,\s*pattern\)/);
   assert.match(appJs, /symbol\.append\(createRestGlyph\(char\)\)/);
   assert.match(appJs, /function createRestGlyph\(restSymbol\)/);
+  assert.match(appJs, /svg\.append\(createEighthRestGroup\(\{\s*transform: "translate\(0 -2\) scale\(0\.95\)"/);
   assert.match(appJs, /function createStandardSixteenthRestGroup\(options = \{\}\)/);
   assert.match(appJs, /sixteenth-rest-head-upper/);
   assert.match(appJs, /sixteenth-rest-head-lower/);

@@ -1236,16 +1236,7 @@ function createRestGlyph(restSymbol) {
 
   if (restSymbol === "𝄾") {
     svg.classList.add("eighth-rest-glyph");
-    svg.append(
-      createSvgElement("circle", { cx: "19", cy: "20", r: "7", fill: "currentColor" }),
-      createSvgElement("path", {
-        d: "M26 20 C35 27 29 43 18 57",
-        fill: "none",
-        stroke: "currentColor",
-        "stroke-width": "7",
-        "stroke-linecap": "round",
-      })
-    );
+    svg.append(createEighthRestGroup({ transform: "translate(0 -2) scale(0.95)" }));
     return svg;
   }
 
