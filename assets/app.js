@@ -950,40 +950,7 @@ function createChallengeRhythmGlyph(glyph) {
   svg.setAttribute("focusable", "false");
 
   if (glyph === "eighth-triplet") {
-    svg.append(
-      createTupletBracket(3, 12, 100),
-      createSvgElement("path", { d: "M28 22 L88 22 L88 29 L28 29 Z", fill: "currentColor" }),
-      createSvgElement("line", {
-        x1: "28",
-        y1: "25",
-        x2: "28",
-        y2: "50",
-        stroke: "currentColor",
-        "stroke-width": "5",
-        "stroke-linecap": "round",
-      }),
-      createSvgElement("line", {
-        x1: "58",
-        y1: "25",
-        x2: "58",
-        y2: "50",
-        stroke: "currentColor",
-        "stroke-width": "5",
-        "stroke-linecap": "round",
-      }),
-      createSvgElement("line", {
-        x1: "88",
-        y1: "25",
-        x2: "88",
-        y2: "50",
-        stroke: "currentColor",
-        "stroke-width": "5",
-        "stroke-linecap": "round",
-      }),
-      createNoteHead(20, 51),
-      createNoteHead(50, 51),
-      createNoteHead(80, 51)
-    );
+    svg.append(createReferenceEighthTripletGlyph());
     return svg;
   }
 
@@ -1039,6 +1006,81 @@ function createChallengeRhythmGlyph(glyph) {
     createSvgElement("circle", { cx: "88", cy: "51", r: "4.2", fill: "currentColor" })
   );
   return svg;
+}
+
+function createReferenceEighthTripletGlyph() {
+  const group = createSvgElement("g", { class: "reference-eighth-triplet" });
+  group.append(
+    createSvgElement("path", {
+      class: "reference-triplet-beam",
+      d: "M32 18 L94 18 L94 23 L32 23 Z",
+      fill: "currentColor",
+    }),
+    createSvgElement("line", {
+      x1: "32",
+      y1: "18.7",
+      x2: "32",
+      y2: "47",
+      stroke: "currentColor",
+      "stroke-width": "3.8",
+      "stroke-linecap": "butt",
+    }),
+    createSvgElement("line", {
+      x1: "62",
+      y1: "18.7",
+      x2: "62",
+      y2: "47",
+      stroke: "currentColor",
+      "stroke-width": "3.8",
+      "stroke-linecap": "butt",
+    }),
+    createSvgElement("line", {
+      x1: "92",
+      y1: "18.7",
+      x2: "92",
+      y2: "47",
+      stroke: "currentColor",
+      "stroke-width": "3.8",
+      "stroke-linecap": "butt",
+    }),
+    createReferenceTripletBracket(),
+    createNoteHead(25, 48),
+    createNoteHead(55, 48),
+    createNoteHead(85, 48)
+  );
+  return group;
+}
+
+function createReferenceTripletBracket() {
+  const group = createSvgElement("g", { class: "reference-triplet-bracket" });
+  group.append(
+    createSvgElement("path", {
+      d: "M51 7 H23 V12",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "2.1",
+      "stroke-linecap": "square",
+      "stroke-linejoin": "miter",
+    }),
+    createSvgText("3", {
+      x: "57",
+      y: "12",
+      "text-anchor": "middle",
+      fill: "currentColor",
+      "font-family": "Georgia, 'Times New Roman', serif",
+      "font-size": "14",
+      "font-weight": "700",
+    }),
+    createSvgElement("path", {
+      d: "M63 7 H94 V12",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "2.1",
+      "stroke-linecap": "square",
+      "stroke-linejoin": "miter",
+    })
+  );
+  return group;
 }
 
 function createExpertRhythmGlyph(glyph) {
