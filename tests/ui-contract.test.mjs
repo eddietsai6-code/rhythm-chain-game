@@ -222,12 +222,17 @@ test("level 51 triplet rhythms render as tuplet notation glyphs", () => {
   assert.match(appJs, /svg\.append\(createReferenceEighthTripletGlyph\(\)\)/);
   assert.match(appJs, /function createReferenceEighthTripletGlyph\(\)/);
   assert.match(appJs, /class: "reference-eighth-triplet"/);
+  assert.match(appJs, /svg\.append\(createReferenceTripletRestMiddleGlyph\(\)\)/);
+  assert.match(appJs, /function createReferenceTripletRestMiddleGlyph\(\)/);
+  assert.match(appJs, /class: "reference-triplet-rest-middle"/);
+  assert.match(appJs, /class: "reference-triplet-rest-beam"/);
+  assert.match(appJs, /variant: "triplet-middle"/);
   assert.match(appJs, /function createReferenceTripletBracket\(\)/);
   assert.match(appJs, /class: "reference-triplet-bracket"/);
-  assert.match(appJs, /createTupletBracket\(3,/);
-  assert.match(appJs, /createSvgText\(String\(number\)/);
+  assert.match(appJs, /createSvgText\("3"/);
   assert.match(css, /\.challenge-rhythm-glyph\s*{/);
   assert.match(css, /\.challenge-rhythm-glyph\.eighth-triplet\s*{/);
+  assert.match(css, /\.challenge-rhythm-glyph\.triplet-rest-middle\s*{/);
 });
 
 test("level 61 quintuplet and sextuplet rhythms render as extended tuplet glyphs", () => {

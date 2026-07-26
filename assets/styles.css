@@ -583,6 +583,11 @@ h1 {
   height: 1.22em;
 }
 
+.challenge-rhythm-glyph.triplet-rest-middle {
+  width: 2.52em;
+  height: 1.22em;
+}
+
 .expert-rhythm-glyph {
   width: 2.06em;
   height: 1em;
@@ -707,6 +712,10 @@ h1 {
 
 .practice-card[data-combo-tier="16"] .challenge-rhythm-glyph.eighth-triplet {
   width: 2.28em;
+}
+
+.practice-card[data-combo-tier="16"] .challenge-rhythm-glyph.triplet-rest-middle {
+  width: 2.42em;
 }
 
 .practice-card[data-combo-tier="16"] .expert-rhythm-glyph {

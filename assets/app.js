@@ -1035,31 +1035,8 @@ function createChallengeRhythmGlyph(glyph) {
   }
 
   if (glyph === "triplet-rest-middle") {
-    svg.append(
-      createTupletBracket(3, 10, 102),
-      createSvgElement("path", { d: "M27 22 L90 22 L90 29 L27 29 Z", fill: "currentColor" }),
-      createSvgElement("line", {
-        x1: "27",
-        y1: "25",
-        x2: "27",
-        y2: "50",
-        stroke: "currentColor",
-        "stroke-width": "5",
-        "stroke-linecap": "round",
-      }),
-      createSvgElement("line", {
-        x1: "90",
-        y1: "25",
-        x2: "90",
-        y2: "50",
-        stroke: "currentColor",
-        "stroke-width": "5",
-        "stroke-linecap": "round",
-      }),
-      createNoteHead(19, 51),
-      createEighthRestGroup({ transform: "translate(43 21) scale(0.58)" }),
-      createNoteHead(82, 51)
-    );
+    svg.setAttribute("viewBox", "0 0 120 72");
+    svg.append(createReferenceTripletRestMiddleGlyph());
     return svg;
   }
 
@@ -1159,6 +1136,40 @@ function createReferenceTripletBracket() {
       "stroke-linecap": "square",
       "stroke-linejoin": "miter",
     })
+  );
+  return group;
+}
+
+function createReferenceTripletRestMiddleGlyph() {
+  const group = createSvgElement("g", { class: "reference-triplet-rest-middle" });
+  group.append(
+    createReferenceTripletBracket(),
+    createSvgElement("path", {
+      class: "reference-triplet-rest-beam",
+      d: "M31 24 H100 V29.5 H31 Z",
+      fill: "currentColor",
+    }),
+    createSvgElement("line", {
+      x1: "32",
+      y1: "24.5",
+      x2: "32",
+      y2: "52",
+      stroke: "currentColor",
+      "stroke-width": "3.2",
+      "stroke-linecap": "butt",
+    }),
+    createSvgElement("line", {
+      x1: "99",
+      y1: "24.5",
+      x2: "99",
+      y2: "52",
+      stroke: "currentColor",
+      "stroke-width": "3.2",
+      "stroke-linecap": "butt",
+    }),
+    createNoteHead(24, 54),
+    createEighthRestGroup({ variant: "triplet-middle", transform: "translate(47 6) scale(0.9)" }),
+    createNoteHead(91, 54)
   );
   return group;
 }
