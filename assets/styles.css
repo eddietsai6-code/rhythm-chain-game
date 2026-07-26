@@ -99,66 +99,69 @@ h1 {
 
 .page-switch {
   position: absolute;
-  top: 12px;
-  right: 14px;
+  top: 10px;
+  right: 12px;
   z-index: 4;
   display: block;
-  width: 54px;
-  height: 36px;
-  border-radius: 15px;
-  filter: drop-shadow(0 6px 9px rgba(0, 0, 0, 0.15));
+  width: 78px;
+  height: 46px;
+  border-radius: 17px;
+  overflow: visible;
+  background: #17181b;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 -8px 16px rgba(0, 0, 0, 0.38), 0 9px 18px rgba(0, 0, 0, 0.18);
 }
 
-.page-switch-track,
-.page-switch-stem,
-.page-switch-knob {
+.page-switch-art {
   position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  color: #ffffff;
   pointer-events: none;
 }
 
-.page-switch-track {
-  left: 16px;
-  top: 21px;
-  width: 30px;
-  height: 9px;
-  border: 3px solid rgba(255, 255, 255, 0.98);
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(225, 225, 225, 0.22));
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.95), 0 0 13px rgba(255, 255, 255, 0.62), inset 0 -2px 2px rgba(0, 0, 0, 0.18);
+.page-switch-base-halo {
+  opacity: 0.9;
+  filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.55));
 }
 
-.page-switch-stem {
-  left: 21px;
-  top: 12px;
-  width: 4px;
-  height: 15px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #ffffff, #b9b9b9 70%, #ffffff);
-  box-shadow: 0 0 7px rgba(255, 255, 255, 0.92);
-  transform: rotate(-20deg);
-  transform-origin: 50% 100%;
-  transition: left 190ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1);
+.page-switch-base {
+  color: #ffffff;
+  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.52)) drop-shadow(0 0 4px rgba(255, 255, 255, 0.74));
 }
 
-.page-switch-knob {
-  left: 9px;
-  top: 5px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 62% 24%, #ffb1a8 0 10%, #f04444 34%, #bc2228 68%, #721216 100%);
-  box-shadow: inset -5px -6px 7px rgba(79, 0, 0, 0.34), inset 4px 3px 5px rgba(255, 255, 255, 0.22), 0 4px 8px rgba(122, 11, 14, 0.36);
-  transition: left 190ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 190ms cubic-bezier(0.2, 0.8, 0.2, 1);
+.page-switch-base-inner {
+  color: rgba(22, 23, 25, 0.88);
 }
 
-.page-switch[data-active-index="1"] .page-switch-stem {
-  left: 35px;
-  transform: rotate(20deg);
+.page-switch-lever {
+  color: #ffffff;
+  transform-box: view-box;
+  transform-origin: 40px 49px;
+  transition: transform 210ms cubic-bezier(0.2, 0.85, 0.2, 1);
 }
 
-.page-switch[data-active-index="1"] .page-switch-knob {
-  left: 28px;
-  transform: translateY(1px);
+.page-switch-link-shadow {
+  color: rgba(0, 0, 0, 0.52);
+  transform: translate(2px, 2px);
+}
+
+.page-switch-link {
+  color: #f5f5f5;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.75));
+}
+
+.page-switch-ball {
+  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.48));
+}
+
+.page-switch-ball-highlight {
+  opacity: 0.74;
+}
+
+.page-switch[data-active-index="1"] .page-switch-lever {
+  transform: translateX(32px) rotate(9deg);
 }
 
 .page-switch-button {
@@ -194,7 +197,7 @@ h1 {
 }
 
 .page-switch-button:focus-visible {
-  outline: 2px solid #111111;
+  outline: 2px solid #33aeea;
   outline-offset: 4px;
 }
 
@@ -620,40 +623,11 @@ h1 {
 }
 
 .practice-card[data-combo-tier="16"] .page-switch {
-  top: 10px;
-  right: 12px;
-  width: 50px;
-  height: 34px;
-}
-
-.practice-card[data-combo-tier="16"] .page-switch-track {
-  left: 15px;
-  top: 20px;
-  width: 28px;
-  height: 8px;
-  border-width: 3px;
-}
-
-.practice-card[data-combo-tier="16"] .page-switch-stem {
-  left: 20px;
-  top: 12px;
-  width: 4px;
-  height: 14px;
-}
-
-.practice-card[data-combo-tier="16"] .page-switch-knob {
-  left: 8px;
-  top: 5px;
-  width: 19px;
-  height: 19px;
-}
-
-.practice-card[data-combo-tier="16"] .page-switch[data-active-index="1"] .page-switch-stem {
-  left: 33px;
-}
-
-.practice-card[data-combo-tier="16"] .page-switch[data-active-index="1"] .page-switch-knob {
-  left: 26px;
+  top: 8px;
+  right: 8px;
+  width: 66px;
+  height: 40px;
+  border-radius: 15px;
 }
 
 .practice-card[data-combo-tier="16"] .page-switch-button {

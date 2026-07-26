@@ -220,20 +220,9 @@ function render() {
 function renderPageSwitch() {
   const currentPage = getLevelPage(state.level);
   const currentPageIndex = LEVEL_PAGES.findIndex((page) => page.id === currentPage.id);
-  const track = document.createElement("span");
-  track.className = "page-switch-track";
-  track.setAttribute("aria-hidden", "true");
-  const stem = document.createElement("span");
-  stem.className = "page-switch-stem";
-  stem.setAttribute("aria-hidden", "true");
-  const knob = document.createElement("span");
-  knob.className = "page-switch-knob";
-  knob.setAttribute("aria-hidden", "true");
   selectors.pageSwitch.dataset.activeIndex = String(Math.max(0, currentPageIndex));
   selectors.pageSwitch.replaceChildren(
-    track,
-    stem,
-    knob,
+    createPageSwitchArt(),
     ...LEVEL_PAGES.map((page) => {
       const button = document.createElement("button");
       button.className = "page-switch-button";
@@ -245,6 +234,96 @@ function renderPageSwitch() {
       return button;
     })
   );
+}
+
+function createPageSwitchArt() {
+  const svg = createSvgElement("svg", {
+    class: "page-switch-art",
+    viewBox: "0 0 118 68",
+    "aria-hidden": "true",
+    focusable: "false",
+  });
+  const defs = createSvgElement("defs", {});
+  const ballGradient = createSvgElement("radialGradient", {
+    id: "pageSwitchBallGradient",
+    cx: "60%",
+    cy: "24%",
+    r: "76%",
+  });
+  ballGradient.append(
+    createSvgElement("stop", { offset: "0", "stop-color": "#ffd7d1" }),
+    createSvgElement("stop", { offset: "0.18", "stop-color": "#ff5a53" }),
+    createSvgElement("stop", { offset: "0.58", "stop-color": "#ca2329" }),
+    createSvgElement("stop", { offset: "1", "stop-color": "#761115" })
+  );
+  defs.append(ballGradient);
+
+  const lever = createSvgElement("g", { class: "page-switch-lever" });
+  lever.append(
+    createSvgElement("path", {
+      class: "page-switch-link-shadow",
+      d: "M40 49 L29 24",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "8",
+      "stroke-linecap": "round",
+    }),
+    createSvgElement("path", {
+      class: "page-switch-link",
+      d: "M40 49 L29 24",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "5",
+      "stroke-linecap": "round",
+    }),
+    createSvgElement("circle", {
+      class: "page-switch-ball",
+      cx: "29",
+      cy: "23",
+      r: "15",
+      fill: "url(#pageSwitchBallGradient)",
+    }),
+    createSvgElement("circle", {
+      class: "page-switch-ball-highlight",
+      cx: "33",
+      cy: "17",
+      r: "3.6",
+      fill: "#fff7f5",
+    })
+  );
+
+  svg.append(
+    defs,
+    createSvgElement("path", {
+      class: "page-switch-base-halo",
+      d: "M43 42 H91 C99 42 104 46 104 51 C104 57 99 60 91 60 H45 C37 60 33 56 31 49",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "10",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    }),
+    createSvgElement("path", {
+      class: "page-switch-base",
+      d: "M43 42 H91 C99 42 104 46 104 51 C104 57 99 60 91 60 H45 C37 60 33 56 31 49",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "6",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    }),
+    createSvgElement("path", {
+      class: "page-switch-base-inner",
+      d: "M46 48 H90 C94 48 97 49 97 51 C97 54 94 55 90 55 H47 C42 55 40 53 39 50",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "3",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    }),
+    lever
+  );
+  return svg;
 }
 
 function renderLevelList() {
