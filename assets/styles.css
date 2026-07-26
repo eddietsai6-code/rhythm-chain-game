@@ -103,6 +103,7 @@ h1 {
   right: 12px;
   z-index: 4;
   display: block;
+  --page-switch-slots: 3;
   width: 64px;
   height: 44px;
   border-radius: 18px;
@@ -161,14 +162,19 @@ h1 {
 }
 
 .page-switch[data-active-index="1"] .page-switch-lever {
-  transform: translateX(32px) rotate(9deg);
+  transform: translateX(18px) rotate(24deg);
+}
+
+.page-switch[data-active-index="2"] .page-switch-lever {
+  transform: translateX(36px) rotate(48deg);
 }
 
 .page-switch-button {
   position: absolute;
   top: 0;
+  left: var(--page-switch-left, 0);
   z-index: 2;
-  width: 50%;
+  width: calc(100% / var(--page-switch-slots));
   height: 100%;
   padding: 0;
   border: 0;
@@ -176,14 +182,6 @@ h1 {
   background: transparent;
   cursor: pointer;
   color: transparent;
-}
-
-.page-switch-button:first-of-type {
-  left: 0;
-}
-
-.page-switch-button:last-of-type {
-  right: 0;
 }
 
 .page-switch-button.active {
@@ -641,7 +639,7 @@ h1 {
 }
 
 .practice-card[data-combo-tier="16"] .page-switch-button {
-  width: 50%;
+  width: calc(100% / var(--page-switch-slots));
   height: 100%;
 }
 

@@ -19,6 +19,7 @@ import {
 } from "./rhythm-core.js";
 
 const storageKey = "rhythm-chain-game-progress-v1";
+const PAGE_SWITCH_SLOT_COUNT = 3;
 const REST_SYMBOLS = new Set(["𝄽", "𝄾", "𝄿"]);
 const svgNamespace = "http://www.w3.org/2000/svg";
 const selectors = {
@@ -221,12 +222,14 @@ function renderPageSwitch() {
   const currentPage = getLevelPage(state.level);
   const currentPageIndex = LEVEL_PAGES.findIndex((page) => page.id === currentPage.id);
   selectors.pageSwitch.dataset.activeIndex = String(Math.max(0, currentPageIndex));
+  selectors.pageSwitch.dataset.slotCount = String(PAGE_SWITCH_SLOT_COUNT);
   selectors.pageSwitch.replaceChildren(
     createPageSwitchArt(),
-    ...LEVEL_PAGES.map((page) => {
+    ...LEVEL_PAGES.map((page, index) => {
       const button = document.createElement("button");
       button.className = "page-switch-button";
       button.type = "button";
+      button.style.setProperty("--page-switch-left", `${(index * 100) / PAGE_SWITCH_SLOT_COUNT}%`);
       button.setAttribute("aria-label", `${page.name} ${page.startLevel}-${page.endLevel}`);
       button.disabled = page.locked || page.startLevel > LEVEL_COUNT;
       if (page.id === currentPage.id) button.classList.add("active");

@@ -91,9 +91,12 @@ test("title area exposes a silent corner stage switch", () => {
   assert.match(html, /id="pageSwitch"/);
   assert.match(html, /aria-label="切换难度页面"/);
   assert.match(appJs, /LEVEL_PAGES/);
+  assert.match(appJs, /const PAGE_SWITCH_SLOT_COUNT = 3/);
   assert.match(appJs, /pageSwitch:\s*document\.querySelector\("#pageSwitch"\)/);
   assert.match(appJs, /function renderPageSwitch\(\)/);
   assert.match(appJs, /const currentPageIndex = LEVEL_PAGES\.findIndex/);
+  assert.match(appJs, /selectors\.pageSwitch\.dataset\.slotCount = String\(PAGE_SWITCH_SLOT_COUNT\)/);
+  assert.match(appJs, /button\.style\.setProperty\("--page-switch-left", `\$\{\(index \* 100\) \/ PAGE_SWITCH_SLOT_COUNT\}%`\)/);
   assert.match(appJs, /createPageSwitchArt\(\)/);
   assert.match(appJs, /function createPageSwitchArt\(\)/);
   assert.match(appJs, /class: "page-switch-art"/);
@@ -113,6 +116,9 @@ test("title area exposes a silent corner stage switch", () => {
   assert.match(css, /\.page-switch-lever\s*{/);
   assert.match(css, /\.page-switch-ball\s*{/);
   assert.match(css, /\.page-switch\[data-active-index="1"\] \.page-switch-lever\s*{/);
+  assert.match(css, /\.page-switch\[data-active-index="2"\] \.page-switch-lever\s*{/);
+  assert.match(css, /--page-switch-slots:\s*3/);
+  assert.match(css, /left:\s*var\(--page-switch-left,\s*0\)/);
   assert.match(css, /\.page-switch-button\.active\s*{/);
   assert.doesNotMatch(css, /background:\s*#17181b/);
   assert.doesNotMatch(css, /\.page-switch::before/);
