@@ -220,8 +220,20 @@ function render() {
 function renderPageSwitch() {
   const currentPage = getLevelPage(state.level);
   const currentPageIndex = LEVEL_PAGES.findIndex((page) => page.id === currentPage.id);
+  const track = document.createElement("span");
+  track.className = "page-switch-track";
+  track.setAttribute("aria-hidden", "true");
+  const stem = document.createElement("span");
+  stem.className = "page-switch-stem";
+  stem.setAttribute("aria-hidden", "true");
+  const knob = document.createElement("span");
+  knob.className = "page-switch-knob";
+  knob.setAttribute("aria-hidden", "true");
   selectors.pageSwitch.dataset.activeIndex = String(Math.max(0, currentPageIndex));
   selectors.pageSwitch.replaceChildren(
+    track,
+    stem,
+    knob,
     ...LEVEL_PAGES.map((page) => {
       const button = document.createElement("button");
       button.className = "page-switch-button";

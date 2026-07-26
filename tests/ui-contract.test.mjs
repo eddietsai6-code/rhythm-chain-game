@@ -94,6 +94,9 @@ test("title area exposes a silent corner stage switch", () => {
   assert.match(appJs, /pageSwitch:\s*document\.querySelector\("#pageSwitch"\)/);
   assert.match(appJs, /function renderPageSwitch\(\)/);
   assert.match(appJs, /const currentPageIndex = LEVEL_PAGES\.findIndex/);
+  assert.match(appJs, /track\.className = "page-switch-track"/);
+  assert.match(appJs, /stem\.className = "page-switch-stem"/);
+  assert.match(appJs, /knob\.className = "page-switch-knob"/);
   assert.match(appJs, /selectors\.pageSwitch\.dataset\.activeIndex = String\(Math\.max\(0,\s*currentPageIndex\)\)/);
   assert.doesNotMatch(appJs, /textContent = page\.label/);
   assert.doesNotMatch(appJs, /textContent = page\.name/);
@@ -101,9 +104,12 @@ test("title area exposes a silent corner stage switch", () => {
   assert.match(appJs, /loadLevel\(page\.startLevel\)/);
   assert.match(appJs, /button\.setAttribute\("aria-label", `\$\{page\.name\} \$\{page\.startLevel\}-\$\{page\.endLevel\}`\)/);
   assert.match(css, /\.page-switch\s*{/);
-  assert.match(css, /\.page-switch::before\s*{/);
-  assert.match(css, /\.page-switch\[data-active-index="1"\]::before\s*{/);
+  assert.match(css, /\.page-switch-track\s*{/);
+  assert.match(css, /\.page-switch-stem\s*{/);
+  assert.match(css, /\.page-switch-knob\s*{/);
+  assert.match(css, /\.page-switch\[data-active-index="1"\] \.page-switch-knob\s*{/);
   assert.match(css, /\.page-switch-button\.active\s*{/);
+  assert.doesNotMatch(css, /\.page-switch::before/);
   assert.doesNotMatch(css, /\.page-switch-roman/);
   assert.doesNotMatch(css, /\.page-switch-stage/);
 });
