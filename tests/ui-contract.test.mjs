@@ -107,12 +107,14 @@ test("title area exposes a silent corner stage switch", () => {
   assert.match(appJs, /loadLevel\(page\.startLevel\)/);
   assert.match(appJs, /button\.setAttribute\("aria-label", `\$\{page\.name\} \$\{page\.startLevel\}-\$\{page\.endLevel\}`\)/);
   assert.match(css, /\.page-switch\s*{/);
+  assert.match(css, /background:\s*transparent/);
   assert.match(css, /\.page-switch-art\s*{/);
   assert.match(css, /\.page-switch-base-halo\s*{/);
   assert.match(css, /\.page-switch-lever\s*{/);
   assert.match(css, /\.page-switch-ball\s*{/);
   assert.match(css, /\.page-switch\[data-active-index="1"\] \.page-switch-lever\s*{/);
   assert.match(css, /\.page-switch-button\.active\s*{/);
+  assert.doesNotMatch(css, /background:\s*#17181b/);
   assert.doesNotMatch(css, /\.page-switch::before/);
   assert.doesNotMatch(css, /\.page-switch-roman/);
   assert.doesNotMatch(css, /\.page-switch-stage/);
@@ -216,6 +218,7 @@ test("level 51 triplet rhythms render as tuplet notation glyphs", () => {
   assert.match(appJs, /symbol\.append\(createChallengeRhythmGlyph\(pattern\.glyph\)\)/);
   assert.match(appJs, /function createChallengeRhythmGlyph\(glyph\)/);
   assert.match(appJs, /classList\.add\("challenge-rhythm-glyph"\)/);
+  assert.match(appJs, /svg\.setAttribute\("viewBox",\s*"0 0 120 72"\)/);
   assert.match(appJs, /svg\.append\(createReferenceEighthTripletGlyph\(\)\)/);
   assert.match(appJs, /function createReferenceEighthTripletGlyph\(\)/);
   assert.match(appJs, /class: "reference-eighth-triplet"/);
@@ -224,6 +227,7 @@ test("level 51 triplet rhythms render as tuplet notation glyphs", () => {
   assert.match(appJs, /createTupletBracket\(3,/);
   assert.match(appJs, /createSvgText\(String\(number\)/);
   assert.match(css, /\.challenge-rhythm-glyph\s*{/);
+  assert.match(css, /\.challenge-rhythm-glyph\.eighth-triplet\s*{/);
 });
 
 test("level 61 quintuplet and sextuplet rhythms render as extended tuplet glyphs", () => {

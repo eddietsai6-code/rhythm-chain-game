@@ -1029,6 +1029,7 @@ function createChallengeRhythmGlyph(glyph) {
   svg.setAttribute("focusable", "false");
 
   if (glyph === "eighth-triplet") {
+    svg.setAttribute("viewBox", "0 0 120 72");
     svg.append(createReferenceEighthTripletGlyph());
     return svg;
   }
@@ -1092,40 +1093,40 @@ function createReferenceEighthTripletGlyph() {
   group.append(
     createSvgElement("path", {
       class: "reference-triplet-beam",
-      d: "M32 18 L94 18 L94 23 L32 23 Z",
+      d: "M34 24 L96 24 L96 29.5 L34 29.5 Z",
       fill: "currentColor",
     }),
     createSvgElement("line", {
-      x1: "32",
-      y1: "18.7",
-      x2: "32",
-      y2: "47",
+      x1: "35",
+      y1: "24.5",
+      x2: "35",
+      y2: "52",
       stroke: "currentColor",
-      "stroke-width": "3.8",
+      "stroke-width": "3.2",
       "stroke-linecap": "butt",
     }),
     createSvgElement("line", {
-      x1: "62",
-      y1: "18.7",
-      x2: "62",
-      y2: "47",
+      x1: "65",
+      y1: "24.5",
+      x2: "65",
+      y2: "52",
       stroke: "currentColor",
-      "stroke-width": "3.8",
+      "stroke-width": "3.2",
       "stroke-linecap": "butt",
     }),
     createSvgElement("line", {
-      x1: "92",
-      y1: "18.7",
-      x2: "92",
-      y2: "47",
+      x1: "95",
+      y1: "24.5",
+      x2: "95",
+      y2: "52",
       stroke: "currentColor",
-      "stroke-width": "3.8",
+      "stroke-width": "3.2",
       "stroke-linecap": "butt",
     }),
     createReferenceTripletBracket(),
-    createNoteHead(25, 48),
-    createNoteHead(55, 48),
-    createNoteHead(85, 48)
+    createNoteHead(27, 54),
+    createNoteHead(57, 54),
+    createNoteHead(87, 54)
   );
   return group;
 }
@@ -1134,27 +1135,27 @@ function createReferenceTripletBracket() {
   const group = createSvgElement("g", { class: "reference-triplet-bracket" });
   group.append(
     createSvgElement("path", {
-      d: "M51 7 H23 V12",
+      d: "M51 10 H22 V15",
       fill: "none",
       stroke: "currentColor",
-      "stroke-width": "2.1",
+      "stroke-width": "2.3",
       "stroke-linecap": "square",
       "stroke-linejoin": "miter",
     }),
     createSvgText("3", {
-      x: "57",
-      y: "12",
+      x: "60",
+      y: "16",
       "text-anchor": "middle",
       fill: "currentColor",
       "font-family": "Georgia, 'Times New Roman', serif",
-      "font-size": "14",
+      "font-size": "17",
       "font-weight": "700",
     }),
     createSvgElement("path", {
-      d: "M63 7 H94 V12",
+      d: "M69 10 H98 V15",
       fill: "none",
       stroke: "currentColor",
-      "stroke-width": "2.1",
+      "stroke-width": "2.3",
       "stroke-linecap": "square",
       "stroke-linejoin": "miter",
     })
