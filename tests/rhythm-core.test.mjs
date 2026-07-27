@@ -73,12 +73,10 @@ test("unlocked rhythm cards become more complex across the course", () => {
   assert.ok(final.includes("sixteenthRestThreeSixteenths"));
   assert.ok(final.length > preSyncopation.length);
   assert.ok(!final.includes("eighthRestTwoSixteenths"));
-  assert.ok(advanced.includes("eighthRestTwoSixteenths"));
   assert.ok(advanced.includes("dottedEighthSixteenth"));
   assert.ok(advanced.includes("twoSixteenthsEighthRest"));
   assert.ok(!advanced.includes("eighthTriplet"));
   assert.ok(challenge.includes("eighthTriplet"));
-  assert.ok(challenge.includes("tripletRestMiddle"));
   assert.ok(challenge.includes("sixteenthRestDottedEighth"));
   assert.ok(!challenge.includes("quintuplet"));
   assert.ok(expert.includes("quintuplet"));
@@ -115,11 +113,9 @@ test("pattern catalog only uses theory-safe one-beat quarter, eighth, and sixtee
     "twoSixteenthsEighth",
     "sixteenthEighthSixteenth",
     "sixteenthRestThreeSixteenths",
-    "eighthRestTwoSixteenths",
     "dottedEighthSixteenth",
     "twoSixteenthsEighthRest",
     "eighthTriplet",
-    "tripletRestMiddle",
     "sixteenthRestDottedEighth",
     "quintuplet",
     "sextuplet",
@@ -132,12 +128,11 @@ test("pattern catalog only uses theory-safe one-beat quarter, eighth, and sixtee
   assert.ok(RHYTHM_PATTERNS.every((pattern) => pattern.symbol !== "♪ ♪"));
   assert.equal(getPatternById("sixteenthEighthSixteenth").color, "gold");
   assert.equal(getPatternById("sixteenthRestThreeSixteenths").color, "orange");
-  assert.equal(getPatternById("eighthRestTwoSixteenths").color, "lime");
   assert.equal(getPatternById("dottedEighthSixteenth").color, "violet");
   assert.equal(getPatternById("twoSixteenthsEighthRest").color, "gold");
   assert.equal(getPatternById("eighthTriplet").color, "violet");
-  assert.equal(getPatternById("tripletRestMiddle").color, "lime");
   assert.equal(getPatternById("sixteenthRestDottedEighth").color, "silver");
+  assert.ok(RHYTHM_PATTERNS.every((pattern) => pattern.color !== "lime"));
   assert.equal(getPatternById("quintuplet").color, "orange");
   assert.equal(getPatternById("sextuplet").color, "blue");
   assert.equal(getPatternById("quintupletRestFirst").color, "gold");
@@ -210,9 +205,6 @@ test("level 31 syncopation cards schedule one-beat sixteenth sounds correctly", 
 });
 
 test("level 41 advanced cards schedule the referenced one-beat rhythms", () => {
-  const eighthRestTwoSixteenths = scheduleChainEvents(["eighthRestTwoSixteenths"], { bpm: 96 })
-    .filter((event) => event.audible)
-    .map((event) => event.beat);
   const dottedEighthSixteenth = scheduleChainEvents(["dottedEighthSixteenth"], { bpm: 96 })
     .filter((event) => event.audible)
     .map((event) => event.beat);
@@ -220,10 +212,8 @@ test("level 41 advanced cards schedule the referenced one-beat rhythms", () => {
     .filter((event) => event.audible)
     .map((event) => event.beat);
 
-  assert.deepEqual(eighthRestTwoSixteenths, [0.5, 0.75]);
   assert.deepEqual(dottedEighthSixteenth, [0, 0.75]);
   assert.deepEqual(twoSixteenthsEighthRest, [0, 0.25]);
-  assert.equal(getPatternById("eighthRestTwoSixteenths").beats, 1);
   assert.equal(getPatternById("dottedEighthSixteenth").beats, 1);
   assert.equal(getPatternById("twoSixteenthsEighthRest").beats, 1);
 });
@@ -232,18 +222,13 @@ test("level 51 triplet and reverse syncopation cards schedule the referenced one
   const eighthTriplet = scheduleChainEvents(["eighthTriplet"], { bpm: 96 })
     .filter((event) => event.audible)
     .map((event) => Number(event.beat.toFixed(3)));
-  const tripletRestMiddle = scheduleChainEvents(["tripletRestMiddle"], { bpm: 96 })
-    .filter((event) => event.audible)
-    .map((event) => Number(event.beat.toFixed(3)));
   const sixteenthRestDottedEighth = scheduleChainEvents(["sixteenthRestDottedEighth"], { bpm: 96 })
     .filter((event) => event.audible)
     .map((event) => event.beat);
 
   assert.deepEqual(eighthTriplet, [0, 0.333, 0.667]);
-  assert.deepEqual(tripletRestMiddle, [0, 0.667]);
   assert.deepEqual(sixteenthRestDottedEighth, [0.25]);
   assert.equal(getPatternById("eighthTriplet").beats, 1);
-  assert.equal(getPatternById("tripletRestMiddle").beats, 1);
   assert.equal(getPatternById("sixteenthRestDottedEighth").beats, 1);
 });
 
@@ -281,7 +266,7 @@ test("level 71 tuplet-rest cards schedule the designed one-beat rhythms", () => 
 });
 
 test("level 41-50 target chains blend advanced and earlier cards", () => {
-  const advancedIds = new Set(["eighthRestTwoSixteenths", "dottedEighthSixteenth", "twoSixteenthsEighthRest"]);
+  const advancedIds = new Set(["dottedEighthSixteenth", "twoSixteenthsEighthRest"]);
 
   for (let levelNumber = 41; levelNumber <= 50; levelNumber += 1) {
     const chain = createTargetChain(getLevelConfig(levelNumber));
@@ -294,7 +279,7 @@ test("level 41-50 target chains blend advanced and earlier cards", () => {
 });
 
 test("level 51-60 target chains blend challenge and earlier cards", () => {
-  const challengeIds = new Set(["eighthTriplet", "tripletRestMiddle", "sixteenthRestDottedEighth"]);
+  const challengeIds = new Set(["eighthTriplet", "sixteenthRestDottedEighth"]);
 
   for (let levelNumber = 51; levelNumber <= 60; levelNumber += 1) {
     const chain = createTargetChain(getLevelConfig(levelNumber));

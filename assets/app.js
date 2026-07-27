@@ -604,7 +604,6 @@ function appendSymbolNodes(symbol, pattern) {
   }
 
   if (
-    pattern.glyph === "eighth-rest-two-sixteenths" ||
     pattern.glyph === "dotted-eighth-sixteenth" ||
     pattern.glyph === "two-sixteenths-eighth-rest"
   ) {
@@ -614,7 +613,6 @@ function appendSymbolNodes(symbol, pattern) {
 
   if (
     pattern.glyph === "eighth-triplet" ||
-    pattern.glyph === "triplet-rest-middle" ||
     pattern.glyph === "sixteenth-rest-dotted-eighth"
   ) {
     symbol.append(createChallengeRhythmGlyph(pattern.glyph));
@@ -937,35 +935,6 @@ function createAdvancedRhythmGlyph(glyph) {
   svg.setAttribute("aria-hidden", "true");
   svg.setAttribute("focusable", "false");
 
-  if (glyph === "eighth-rest-two-sixteenths") {
-    svg.append(
-      createEighthRestGroup({ variant: "advanced", transform: "translate(-2 -6) scale(1.15)" }),
-      createSvgElement("path", { d: "M64 10 L104 10 L104 17 L64 17 Z", fill: "currentColor" }),
-      createSvgElement("path", { d: "M64 24 L104 24 L104 31 L64 31 Z", fill: "currentColor" }),
-      createSvgElement("line", {
-        x1: "64",
-        y1: "14",
-        x2: "64",
-        y2: "49",
-        stroke: "currentColor",
-        "stroke-width": "5",
-        "stroke-linecap": "round",
-      }),
-      createSvgElement("line", {
-        x1: "104",
-        y1: "14",
-        x2: "104",
-        y2: "49",
-        stroke: "currentColor",
-        "stroke-width": "5",
-        "stroke-linecap": "round",
-      }),
-      createNoteHead(56, 50),
-      createNoteHead(96, 50)
-    );
-    return svg;
-  }
-
   if (glyph === "two-sixteenths-eighth-rest") {
     svg.append(
       createSvgElement("path", { d: "M21 10 L62 10 L62 17 L21 17 Z", fill: "currentColor" }),
@@ -1034,12 +1003,6 @@ function createChallengeRhythmGlyph(glyph) {
   if (glyph === "eighth-triplet") {
     svg.setAttribute("viewBox", "0 0 120 72");
     svg.append(createReferenceEighthTripletGlyph());
-    return svg;
-  }
-
-  if (glyph === "triplet-rest-middle") {
-    svg.setAttribute("viewBox", "0 0 120 72");
-    svg.append(createReferenceTripletRestMiddleGlyph());
     return svg;
   }
 
@@ -1139,40 +1102,6 @@ function createReferenceTripletBracket() {
       "stroke-linecap": "square",
       "stroke-linejoin": "miter",
     })
-  );
-  return group;
-}
-
-function createReferenceTripletRestMiddleGlyph() {
-  const group = createSvgElement("g", { class: "reference-triplet-rest-middle" });
-  group.append(
-    createReferenceTripletBracket(),
-    createSvgElement("path", {
-      class: "reference-triplet-rest-beam",
-      d: "M31 24 H100 V29.5 H31 Z",
-      fill: "currentColor",
-    }),
-    createSvgElement("line", {
-      x1: "32",
-      y1: "24.5",
-      x2: "32",
-      y2: "52",
-      stroke: "currentColor",
-      "stroke-width": "3.2",
-      "stroke-linecap": "butt",
-    }),
-    createSvgElement("line", {
-      x1: "99",
-      y1: "24.5",
-      x2: "99",
-      y2: "52",
-      stroke: "currentColor",
-      "stroke-width": "3.2",
-      "stroke-linecap": "butt",
-    }),
-    createNoteHead(24, 54),
-    createEighthRestGroup({ variant: "triplet-middle", transform: "translate(47 6) scale(0.9)" }),
-    createNoteHead(91, 54)
   );
   return group;
 }

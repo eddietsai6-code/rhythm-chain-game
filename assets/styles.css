@@ -13,7 +13,6 @@
   --silver: #eceaed;
   --black: #050505;
   --violet: #7d5bf4;
-  --lime: #cfff75;
   --app-width: 430px;
   --page-gutter: 10px;
   --app-radius: 28px;
@@ -581,11 +580,6 @@ h1 {
   height: 1.22em;
 }
 
-.challenge-rhythm-glyph.triplet-rest-middle {
-  width: 2.52em;
-  height: 1.22em;
-}
-
 .expert-rhythm-glyph {
   width: 2.06em;
   height: 1em;
@@ -712,10 +706,6 @@ h1 {
   width: 2.28em;
 }
 
-.practice-card[data-combo-tier="16"] .challenge-rhythm-glyph.triplet-rest-middle {
-  width: 2.42em;
-}
-
 .practice-card[data-combo-tier="16"] .expert-rhythm-glyph {
   width: 1.64em;
 }
@@ -782,10 +772,6 @@ h1 {
 .color-violet {
   background: var(--violet);
   color: #ffffff;
-}
-
-.color-lime {
-  background: var(--lime);
 }
 
 .drill-footer {

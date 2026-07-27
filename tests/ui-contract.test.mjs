@@ -124,6 +124,7 @@ test("title area exposes a silent corner stage switch", () => {
   assert.doesNotMatch(css, /\.page-switch::before/);
   assert.doesNotMatch(css, /\.page-switch-roman/);
   assert.doesNotMatch(css, /\.page-switch-stage/);
+  assert.doesNotMatch(css, /--lime|\.color-lime/);
 });
 
 test("level jump panel is scoped to the current roman page", () => {
@@ -204,7 +205,6 @@ test("mixed eighth-sixteenth cards render as connected notation glyphs", () => {
 });
 
 test("level 41 advanced rhythms render as connected notation glyphs", () => {
-  assert.match(appJs, /pattern\.glyph === "eighth-rest-two-sixteenths"/);
   assert.match(appJs, /pattern\.glyph === "dotted-eighth-sixteenth"/);
   assert.match(appJs, /pattern\.glyph === "two-sixteenths-eighth-rest"/);
   assert.match(appJs, /symbol\.append\(createAdvancedRhythmGlyph\(pattern\.glyph\)\)/);
@@ -219,7 +219,6 @@ test("level 41 advanced rhythms render as connected notation glyphs", () => {
 
 test("level 51 triplet rhythms render as tuplet notation glyphs", () => {
   assert.match(appJs, /pattern\.glyph === "eighth-triplet"/);
-  assert.match(appJs, /pattern\.glyph === "triplet-rest-middle"/);
   assert.match(appJs, /pattern\.glyph === "sixteenth-rest-dotted-eighth"/);
   assert.match(appJs, /symbol\.append\(createChallengeRhythmGlyph\(pattern\.glyph\)\)/);
   assert.match(appJs, /function createChallengeRhythmGlyph\(glyph\)/);
@@ -228,17 +227,13 @@ test("level 51 triplet rhythms render as tuplet notation glyphs", () => {
   assert.match(appJs, /svg\.append\(createReferenceEighthTripletGlyph\(\)\)/);
   assert.match(appJs, /function createReferenceEighthTripletGlyph\(\)/);
   assert.match(appJs, /class: "reference-eighth-triplet"/);
-  assert.match(appJs, /svg\.append\(createReferenceTripletRestMiddleGlyph\(\)\)/);
-  assert.match(appJs, /function createReferenceTripletRestMiddleGlyph\(\)/);
-  assert.match(appJs, /class: "reference-triplet-rest-middle"/);
-  assert.match(appJs, /class: "reference-triplet-rest-beam"/);
-  assert.match(appJs, /variant: "triplet-middle"/);
   assert.match(appJs, /function createReferenceTripletBracket\(\)/);
   assert.match(appJs, /class: "reference-triplet-bracket"/);
   assert.match(appJs, /createSvgText\("3"/);
   assert.match(css, /\.challenge-rhythm-glyph\s*{/);
   assert.match(css, /\.challenge-rhythm-glyph\.eighth-triplet\s*{/);
-  assert.match(css, /\.challenge-rhythm-glyph\.triplet-rest-middle\s*{/);
+  assert.doesNotMatch(appJs, /triplet-rest-middle/);
+  assert.doesNotMatch(css, /triplet-rest-middle/);
 });
 
 test("level 61 quintuplet and sextuplet rhythms render as extended tuplet glyphs", () => {
