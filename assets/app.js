@@ -229,7 +229,8 @@ function renderPageSwitch() {
       const button = document.createElement("button");
       button.className = "page-switch-button";
       button.type = "button";
-      button.style.setProperty("--page-switch-left", `${(index * 100) / PAGE_SWITCH_SLOT_COUNT}%`);
+      const pageSwitchSlotIndex = LEVEL_PAGES.length === 2 && index === 1 ? PAGE_SWITCH_SLOT_COUNT - 1 : index;
+      button.style.setProperty("--page-switch-left", `${(pageSwitchSlotIndex * 100) / PAGE_SWITCH_SLOT_COUNT}%`);
       button.setAttribute("aria-label", `${page.name} ${page.startLevel}-${page.endLevel}`);
       button.disabled = page.locked || page.startLevel > LEVEL_COUNT;
       if (page.id === currentPage.id) button.classList.add("active");

@@ -161,7 +161,7 @@ h1 {
 }
 
 .page-switch[data-active-index="1"] .page-switch-lever {
-  transform: translateX(18px) rotate(24deg);
+  transform: translateX(36px) rotate(48deg);
 }
 
 .page-switch[data-active-index="2"] .page-switch-lever {
