@@ -79,9 +79,10 @@ test("unlocked rhythm cards become more complex across the course", () => {
   assert.ok(challenge.includes("eighthTriplet"));
   assert.ok(challenge.includes("sixteenthRestDottedEighth"));
   assert.ok(!challenge.includes("quintuplet"));
-  assert.ok(expert.includes("quintuplet"));
+  assert.ok(!expert.includes("quintuplet"));
   assert.ok(expert.includes("sextuplet"));
   assert.ok(!expert.includes("quintupletRestFirst"));
+  assert.ok(master.includes("quintuplet"));
   assert.ok(master.includes("quintupletRestFirst"));
   assert.ok(master.includes("quintupletRestMiddle"));
   assert.ok(master.includes("sextupletRestMiddle"));
@@ -232,7 +233,7 @@ test("level 51 triplet and reverse syncopation cards schedule the referenced one
   assert.equal(getPatternById("sixteenthRestDottedEighth").beats, 1);
 });
 
-test("level 61 quintuplet and sextuplet cards schedule the referenced one-beat rhythms", () => {
+test("extended tuplet cards schedule the referenced one-beat rhythms", () => {
   const quintuplet = scheduleChainEvents(["quintuplet"], { bpm: 96 })
     .filter((event) => event.audible)
     .map((event) => Number(event.beat.toFixed(3)));
@@ -292,7 +293,7 @@ test("level 51-60 target chains blend challenge and earlier cards", () => {
 });
 
 test("level 61-70 target chains blend expert and earlier cards", () => {
-  const expertIds = new Set(["quintuplet", "sextuplet"]);
+  const expertIds = new Set(["sextuplet"]);
 
   for (let levelNumber = 61; levelNumber <= 70; levelNumber += 1) {
     const chain = createTargetChain(getLevelConfig(levelNumber));
@@ -304,8 +305,18 @@ test("level 61-70 target chains blend expert and earlier cards", () => {
   }
 });
 
-test("level 71-80 target chains blend master tuplet rests and earlier cards", () => {
-  const masterIds = new Set(["quintupletRestFirst", "quintupletRestMiddle", "sextupletRestMiddle"]);
+test("levels 61-70 do not unlock or generate the five-note tuplet", () => {
+  for (let levelNumber = 61; levelNumber <= 70; levelNumber += 1) {
+    const unlocked = getUnlockedPatterns(levelNumber).map((pattern) => pattern.id);
+    const chain = createTargetChain(getLevelConfig(levelNumber));
+
+    assert.ok(!unlocked.includes("quintuplet"), `level ${levelNumber} should not unlock quintuplet`);
+    assert.ok(!chain.includes("quintuplet"), `level ${levelNumber} should not generate quintuplet`);
+  }
+});
+
+test("level 71-80 target chains blend master tuplets and earlier cards", () => {
+  const masterIds = new Set(["quintuplet", "quintupletRestFirst", "quintupletRestMiddle", "sextupletRestMiddle"]);
 
   for (let levelNumber = 71; levelNumber <= 80; levelNumber += 1) {
     const chain = createTargetChain(getLevelConfig(levelNumber));

@@ -238,7 +238,7 @@ test("level 51 triplet rhythms render as tuplet notation glyphs", () => {
   assert.doesNotMatch(css, /triplet-rest-middle/);
 });
 
-test("level 61 quintuplet and sextuplet rhythms render as extended tuplet glyphs", () => {
+test("extended tuplet rhythms render as extended tuplet glyphs", () => {
   assert.match(appJs, /pattern\.glyph === "quintuplet"/);
   assert.match(appJs, /pattern\.glyph === "sextuplet"/);
   assert.match(appJs, /symbol\.append\(createExpertRhythmGlyph\(pattern\.glyph\)\)/);

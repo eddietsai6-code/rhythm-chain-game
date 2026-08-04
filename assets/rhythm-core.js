@@ -259,7 +259,7 @@ const PATTERN_DEFINITIONS = [
     glyph: "quintuplet",
     family: "tuplets",
     color: "orange",
-    unlockLevel: EXPERT_UNLOCK_LEVEL,
+    unlockLevel: MASTER_UNLOCK_LEVEL,
     difficulty: 8,
     beats: 1,
     syllables: "TA-KA-DI-MI-NA",
