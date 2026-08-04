@@ -621,15 +621,6 @@ function appendSymbolNodes(symbol, pattern) {
   }
 
   if (
-    pattern.glyph === "eight-thirty-seconds" ||
-    pattern.glyph === "four-thirty-seconds-eighth" ||
-    pattern.glyph === "eighth-four-thirty-seconds"
-  ) {
-    symbol.append(createThirtySecondRhythmGlyph(pattern.glyph));
-    return;
-  }
-
-  if (
     pattern.glyph === "quintuplet" ||
     pattern.glyph === "sextuplet"
   ) {
@@ -1111,87 +1102,6 @@ function createReferenceTripletBracket() {
     })
   );
   return group;
-}
-
-function createThirtySecondRhythmGlyph(glyph) {
-  const svg = document.createElementNS(svgNamespace, "svg");
-  svg.classList.add("thirty-second-glyph");
-  svg.classList.add(glyph);
-  svg.setAttribute("viewBox", "0 0 144 64");
-  svg.setAttribute("aria-hidden", "true");
-  svg.setAttribute("focusable", "false");
-
-  const layout = getThirtySecondLayout(glyph);
-  const headY = 52;
-  const beamYs = [10, 18, 26];
-  const beamHeight = 4.4;
-
-  layout.beamSegments.forEach((segment) => {
-    const startStemX = layout.notes[segment.start] + 8;
-    const endStemX = layout.notes[segment.end] + 8;
-    beamYs.slice(0, segment.beamCount).forEach((beamY) => {
-      svg.append(createSvgElement("path", {
-        d: `M${startStemX} ${beamY} L${endStemX} ${beamY} L${endStemX} ${beamY + beamHeight} L${startStemX} ${beamY + beamHeight} Z`,
-        fill: "currentColor",
-      }));
-    });
-  });
-
-  layout.notes.forEach((headX) => {
-    const stemX = headX + 8;
-    svg.append(
-      createSvgElement("line", {
-        x1: String(stemX),
-        y1: "14",
-        x2: String(stemX),
-        y2: String(headY),
-        stroke: "currentColor",
-        "stroke-width": "3.2",
-        "stroke-linecap": "round",
-      }),
-      createThirtySecondNoteHead(headX, headY)
-    );
-  });
-
-  return svg;
-}
-
-function getThirtySecondLayout(glyph) {
-  if (glyph === "eight-thirty-seconds") {
-    return {
-      notes: [12, 29, 46, 63, 80, 97, 114, 131],
-      beamSegments: [{ start: 0, end: 7, beamCount: 3 }],
-    };
-  }
-
-  if (glyph === "four-thirty-seconds-eighth") {
-    return {
-      notes: [14, 35, 56, 77, 123],
-      beamSegments: [
-        { start: 0, end: 4, beamCount: 1 },
-        { start: 0, end: 3, beamCount: 3 },
-      ],
-    };
-  }
-
-  return {
-    notes: [14, 60, 81, 102, 123],
-    beamSegments: [
-      { start: 0, end: 4, beamCount: 1 },
-      { start: 1, end: 4, beamCount: 3 },
-    ],
-  };
-}
-
-function createThirtySecondNoteHead(cx, cy) {
-  return createSvgElement("ellipse", {
-    cx: String(cx),
-    cy: String(cy),
-    rx: "7.2",
-    ry: "5",
-    fill: "currentColor",
-    transform: `rotate(-18 ${cx} ${cy})`,
-  });
 }
 
 function createExpertRhythmGlyph(glyph) {

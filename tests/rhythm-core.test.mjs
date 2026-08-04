@@ -83,9 +83,9 @@ test("unlocked rhythm cards become more complex across the course", () => {
   assert.ok(expert.includes("sextuplet"));
   assert.ok(!expert.includes("quintupletRestFirst"));
   assert.ok(master.includes("quintuplet"));
-  assert.ok(master.includes("eightThirtySeconds"));
-  assert.ok(master.includes("fourThirtySecondsEighth"));
-  assert.ok(master.includes("eighthFourThirtySeconds"));
+  assert.ok(!master.includes("eightThirtySeconds"));
+  assert.ok(!master.includes("fourThirtySecondsEighth"));
+  assert.ok(!master.includes("eighthFourThirtySeconds"));
   assert.ok(!master.includes("quintupletRestFirst"));
   assert.ok(!master.includes("quintupletRestMiddle"));
   assert.ok(!master.includes("sextupletRestMiddle"));
@@ -123,9 +123,6 @@ test("pattern catalog only uses theory-safe one-beat cards", () => {
     "sixteenthRestDottedEighth",
     "quintuplet",
     "sextuplet",
-    "eightThirtySeconds",
-    "fourThirtySecondsEighth",
-    "eighthFourThirtySeconds",
   ]);
   assert.deepEqual([...families].sort(), ["basic", "division", "rests", "syncopation", "tuplets"]);
   assert.ok(RHYTHM_PATTERNS.every((pattern) => pattern.beats === 1));
@@ -139,11 +136,9 @@ test("pattern catalog only uses theory-safe one-beat cards", () => {
   assert.ok(RHYTHM_PATTERNS.every((pattern) => pattern.color !== "lime"));
   assert.equal(getPatternById("quintuplet").color, "orange");
   assert.equal(getPatternById("sextuplet").color, "blue");
-  assert.equal(getPatternById("eightThirtySeconds").color, "violet");
-  assert.equal(getPatternById("fourThirtySecondsEighth").color, "gold");
-  assert.equal(getPatternById("eighthFourThirtySeconds").color, "orange");
   assert.ok(!ids.some((id) => /tie|restRun|offbeat|mixed|anticipation/i.test(id)));
   assert.ok(!ids.some((id) => /quintupletRest|sextupletRest/i.test(id)));
+  assert.ok(!ids.some((id) => /ThirtySeconds/i.test(id)));
 });
 
 test("every combo slot schedules a visual beat pulse before inner rhythm sounds", () => {
@@ -251,23 +246,14 @@ test("extended tuplet cards schedule the referenced one-beat rhythms", () => {
   assert.equal(getPatternById("sextuplet").beats, 1);
 });
 
-test("level 71 thirty-second-note cards schedule the designed one-beat rhythms", () => {
-  const eightThirtySeconds = scheduleChainEvents(["eightThirtySeconds"], { bpm: 96 })
-    .filter((event) => event.audible)
-    .map((event) => Number(event.beat.toFixed(3)));
-  const fourThirtySecondsEighth = scheduleChainEvents(["fourThirtySecondsEighth"], { bpm: 96 })
-    .filter((event) => event.audible)
-    .map((event) => Number(event.beat.toFixed(3)));
-  const eighthFourThirtySeconds = scheduleChainEvents(["eighthFourThirtySeconds"], { bpm: 96 })
-    .filter((event) => event.audible)
-    .map((event) => Number(event.beat.toFixed(3)));
-
-  assert.deepEqual(eightThirtySeconds, [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875]);
-  assert.deepEqual(fourThirtySecondsEighth, [0, 0.125, 0.25, 0.375, 0.5]);
-  assert.deepEqual(eighthFourThirtySeconds, [0, 0.5, 0.625, 0.75, 0.875]);
-  assert.equal(getPatternById("eightThirtySeconds").beats, 1);
-  assert.equal(getPatternById("fourThirtySecondsEighth").beats, 1);
-  assert.equal(getPatternById("eighthFourThirtySeconds").beats, 1);
+test("removed thirty-second cards are not schedulable", () => {
+  [
+    "eightThirtySeconds",
+    "fourThirtySecondsEighth",
+    "eighthFourThirtySeconds",
+  ].forEach((patternId) => {
+    assert.throws(() => scheduleChainEvents([patternId]), /Unknown rhythm pattern/);
+  });
 });
 
 test("level 41-50 target chains blend advanced and earlier cards", () => {
@@ -319,16 +305,23 @@ test("levels 61-70 do not unlock or generate the five-note tuplet", () => {
   }
 });
 
-test("level 71-80 target chains blend thirty-second cards and earlier cards", () => {
-  const masterIds = new Set(["quintuplet", "eightThirtySeconds", "fourThirtySecondsEighth", "eighthFourThirtySeconds"]);
-  const removedRestIds = new Set(["quintupletRestFirst", "quintupletRestMiddle", "sextupletRestMiddle"]);
+test("level 71-80 target chains blend the final tuplet and earlier cards", () => {
+  const masterIds = new Set(["quintuplet"]);
+  const removedIds = new Set([
+    "quintupletRestFirst",
+    "quintupletRestMiddle",
+    "sextupletRestMiddle",
+    "eightThirtySeconds",
+    "fourThirtySecondsEighth",
+    "eighthFourThirtySeconds",
+  ]);
 
   for (let levelNumber = 71; levelNumber <= 80; levelNumber += 1) {
     const chain = createTargetChain(getLevelConfig(levelNumber));
     const masterCount = chain.filter((patternId) => masterIds.has(patternId)).length;
 
     assert.equal(chain.length, 16);
-    assert.ok(chain.every((patternId) => !removedRestIds.has(patternId)), `level ${levelNumber} should not generate tuplet-rest cards`);
+    assert.ok(chain.every((patternId) => !removedIds.has(patternId)), `level ${levelNumber} should not generate removed cards`);
     assert.ok(masterCount >= 1, `level ${levelNumber} should include at least one page V rhythm`);
     assert.ok(masterCount <= 7, `level ${levelNumber} should keep earlier rhythms mixed in`);
   }
