@@ -249,14 +249,16 @@ test("extended tuplet rhythms render as extended tuplet glyphs", () => {
   assert.match(css, /\.expert-rhythm-glyph\s*{/);
 });
 
-test("level 71 tuplet-rest rhythms render with expert rest tuplets", () => {
-  assert.match(appJs, /pattern\.glyph === "quintuplet-rest-first"/);
-  assert.match(appJs, /pattern\.glyph === "quintuplet-rest-middle"/);
-  assert.match(appJs, /pattern\.glyph === "sextuplet-rest-middle"/);
-  assert.match(appJs, /function getExpertTupletRestIndices\(glyph\)/);
-  assert.match(appJs, /const restIndices = new Set\(getExpertTupletRestIndices\(glyph\)\)/);
-  assert.match(appJs, /restIndices\.has\(index\)/);
-  assert.match(appJs, /createExpertTupletRest\(headX,\s*headY\)/);
+test("level 71 thirty-second rhythms render as connected thirty-second glyphs", () => {
+  assert.match(appJs, /pattern\.glyph === "eight-thirty-seconds"/);
+  assert.match(appJs, /pattern\.glyph === "four-thirty-seconds-eighth"/);
+  assert.match(appJs, /pattern\.glyph === "eighth-four-thirty-seconds"/);
+  assert.match(appJs, /function createThirtySecondRhythmGlyph\(glyph\)/);
+  assert.match(appJs, /classList\.add\("thirty-second-glyph"\)/);
+  assert.match(css, /\.thirty-second-glyph\s*{/);
+  assert.doesNotMatch(appJs, /quintuplet-rest-first/);
+  assert.doesNotMatch(appJs, /quintuplet-rest-middle/);
+  assert.doesNotMatch(appJs, /sextuplet-rest-middle/);
 });
 
 test("syncopated sixteenth-rest card uses the standard rest glyph structure", () => {
