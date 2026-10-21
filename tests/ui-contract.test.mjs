@@ -96,7 +96,7 @@ test("title area exposes a silent corner stage switch", () => {
   assert.match(appJs, /function renderPageSwitch\(\)/);
   assert.match(appJs, /const currentPageIndex = LEVEL_PAGES\.findIndex/);
   assert.match(appJs, /selectors\.pageSwitch\.dataset\.slotCount = String\(PAGE_SWITCH_SLOT_COUNT\)/);
-  assert.match(appJs, /const pageSwitchSlotIndex = LEVEL_PAGES\.length === 2 && index === 1 \? PAGE_SWITCH_SLOT_COUNT - 1 : index/);
+  assert.match(appJs, /const pageSwitchSlotIndex = index/);
   assert.match(appJs, /button\.style\.setProperty\("--page-switch-left", `\$\{\(pageSwitchSlotIndex \* 100\) \/ PAGE_SWITCH_SLOT_COUNT\}%`\)/);
   assert.match(appJs, /createPageSwitchArt\(\)/);
   assert.match(appJs, /function createPageSwitchArt\(\)/);
@@ -241,12 +241,16 @@ test("level 51 triplet rhythms render as tuplet notation glyphs", () => {
 test("extended tuplet rhythms render as extended tuplet glyphs", () => {
   assert.match(appJs, /pattern\.glyph === "quintuplet"/);
   assert.match(appJs, /pattern\.glyph === "sextuplet"/);
+  assert.match(appJs, /pattern\.glyph === "septuplet"/);
+  assert.match(appJs, /pattern\.glyph === "octuplet"/);
   assert.match(appJs, /symbol\.append\(createExpertRhythmGlyph\(pattern\.glyph\)\)/);
   assert.match(appJs, /function createExpertRhythmGlyph\(glyph\)/);
   assert.match(appJs, /classList\.add\("expert-rhythm-glyph"\)/);
   assert.match(appJs, /const count = getExpertTupletCount\(glyph\)/);
-  assert.match(appJs, /createTupletBracket\(count,\s*9,\s*123\)/);
+  assert.match(appJs, /createTupletBracket\(count,\s*9,\s*bracketEndX\)/);
   assert.match(css, /\.expert-rhythm-glyph\s*{/);
+  assert.match(css, /\.expert-rhythm-glyph\.septuplet\s*{/);
+  assert.match(css, /\.expert-rhythm-glyph\.octuplet\s*{/);
 });
 
 test("removed thirty-second rhythms do not render as product glyphs", () => {

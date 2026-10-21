@@ -24,33 +24,37 @@ import {
   scheduleCountInEvents,
 } from "../assets/rhythm-core.js";
 
-test("buildLevels creates 80 levels across two staged roman-numbered pages", () => {
+test("buildLevels creates 100 levels across three staged roman-numbered pages", () => {
   const levels = buildLevels();
 
-  assert.equal(LEVEL_COUNT, 80);
-  assert.equal(levels.length, 80);
+  assert.equal(LEVEL_COUNT, 100);
+  assert.equal(levels.length, 100);
   assert.deepEqual(
     LEVEL_PAGES.map((page) => ({ label: page.label, name: page.name, startLevel: page.startLevel, endLevel: page.endLevel, locked: page.locked })),
     [
       { label: "I", name: "初级", startLevel: 1, endLevel: 40, locked: false },
       { label: "II", name: "中级", startLevel: 41, endLevel: 80, locked: false },
+      { label: "III", name: "高级", startLevel: 81, endLevel: 100, locked: false },
     ]
   );
 
   assert.deepEqual(levels.slice(0, 10).map((level) => level.comboCount), Array(10).fill(4));
   assert.deepEqual(levels.slice(10, 20).map((level) => level.comboCount), Array(10).fill(8));
-  assert.deepEqual(levels.slice(20, 80).map((level) => level.comboCount), Array(60).fill(16));
+  assert.deepEqual(levels.slice(20, 100).map((level) => level.comboCount), Array(80).fill(16));
   assert.equal(getComboCountForLevel(1), 4);
   assert.equal(getComboCountForLevel(10), 4);
   assert.equal(getComboCountForLevel(11), 8);
   assert.equal(getComboCountForLevel(20), 8);
   assert.equal(getComboCountForLevel(21), 16);
   assert.equal(getComboCountForLevel(80), 16);
+  assert.equal(getComboCountForLevel(100), 16);
   assert.equal(getLevelPage(37).label, "I");
   assert.equal(getLevelPage(41).label, "II");
   assert.equal(getLevelPage(51).label, "II");
   assert.equal(getLevelPage(61).label, "II");
   assert.equal(getLevelPage(71).label, "II");
+  assert.equal(getLevelPage(81).label, "III");
+  assert.equal(getLevelPage(100).label, "III");
 });
 
 test("unlocked rhythm cards become more complex across the course", () => {
@@ -123,6 +127,8 @@ test("pattern catalog only uses theory-safe one-beat cards", () => {
     "sixteenthRestDottedEighth",
     "quintuplet",
     "sextuplet",
+    "septuplet",
+    "octuplet",
   ]);
   assert.deepEqual([...families].sort(), ["basic", "division", "rests", "syncopation", "tuplets"]);
   assert.ok(RHYTHM_PATTERNS.every((pattern) => pattern.beats === 1));

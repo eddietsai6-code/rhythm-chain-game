@@ -1,4 +1,4 @@
-export const LEVEL_COUNT = 80;
+export const LEVEL_COUNT = 100;
 export const SNARE_TONE = "snare";
 export const DEFAULT_SOUND_ID = SNARE_TONE;
 export const SOUND_PRESETS = deepFreeze([
@@ -24,11 +24,14 @@ export const COUNT_IN_BEATS = 4;
 export const LEVEL_PAGES = deepFreeze([
   { id: "foundation", label: "I", name: "初级", startLevel: 1, endLevel: 40, locked: false },
   { id: "intermediate", label: "II", name: "中级", startLevel: 41, endLevel: 80, locked: false },
+  { id: "advanced", label: "III", name: "高级", startLevel: 81, endLevel: 100, locked: false },
 ]);
 const ADVANCED_UNLOCK_LEVEL = 41;
 const CHALLENGE_UNLOCK_LEVEL = 51;
 const EXPERT_UNLOCK_LEVEL = 61;
 const MASTER_UNLOCK_LEVEL = 71;
+const SEPTUPLET_UNLOCK_LEVEL = 81;
+const OCTUPLET_UNLOCK_LEVEL = 91;
 const MAX_PAGE_NEW_PATTERNS_PER_CHAIN = 7;
 
 function deepFreeze(value) {
@@ -43,6 +46,12 @@ function deepFreeze(value) {
 
 function hit(at, tone = "stick", velocity = 0.82, duration = 0.08) {
   return { at, tone, velocity, duration };
+}
+
+function createTupletHits(count) {
+  return Array.from({ length: count }, (_, index) =>
+    hit(index / count, index % 2 === 0 ? "stick" : "wood", index === 0 ? 0.84 : index % 2 === 0 ? 0.78 : 0.72)
+  );
 }
 
 const PATTERN_DEFINITIONS = [
@@ -288,6 +297,36 @@ const PATTERN_DEFINITIONS = [
       hit(5 / 6, "wood", 0.78),
     ],
   },
+  {
+    id: "septuplet",
+    label: "Seven-note tuplet",
+    name: "七连音",
+    symbol: "7♫",
+    glyph: "septuplet",
+    family: "tuplets",
+    color: "gold",
+    unlockLevel: SEPTUPLET_UNLOCK_LEVEL,
+    difficulty: 9,
+    beats: 1,
+    syllables: "TA-KA-DI-MI-TA-KA-DI",
+    description: "Seven equal sounds inside one beat.",
+    hits: createTupletHits(7),
+  },
+  {
+    id: "octuplet",
+    label: "Eight-note tuplet",
+    name: "八连音",
+    symbol: "8♫",
+    glyph: "octuplet",
+    family: "tuplets",
+    color: "violet",
+    unlockLevel: OCTUPLET_UNLOCK_LEVEL,
+    difficulty: 9,
+    beats: 1,
+    syllables: "TA-KA-DI-MI-TA-KA-DI-MI",
+    description: "Eight equal sounds inside one beat.",
+    hits: createTupletHits(8),
+  },
 ];
 
 const THEORY_SAFE_PATTERN_ORDER = [
@@ -307,6 +346,8 @@ const THEORY_SAFE_PATTERN_ORDER = [
   "sixteenthRestDottedEighth",
   "quintuplet",
   "sextuplet",
+  "septuplet",
+  "octuplet",
 ];
 
 export const RHYTHM_PATTERNS = deepFreeze(
@@ -357,10 +398,12 @@ export function createTargetChain(levelConfig, options = {}) {
   const pageNewPool = pool.filter((pattern) => isPageNewPattern(pattern, pageNewUnlockLevel));
   const minPageNewPatternCount =
     Number.isFinite(pageNewUnlockLevel) && pageNewPool.length > 0
-      ? Math.min(pageNewPool.length, 1 + Math.floor((config.level - pageNewUnlockLevel) / 4))
+      ? Math.min(pageNewPool.length, 2, 1 + Math.floor((config.level - pageNewUnlockLevel) / 4))
       : 0;
   const maxPageNewPatternCount = Number.isFinite(pageNewUnlockLevel)
-    ? Math.min(MAX_PAGE_NEW_PATTERNS_PER_CHAIN, Math.floor(config.comboCount * 0.44))
+    ? pageNewUnlockLevel >= SEPTUPLET_UNLOCK_LEVEL
+      ? Math.min(2, config.comboCount)
+      : Math.min(MAX_PAGE_NEW_PATTERNS_PER_CHAIN, Math.floor(config.comboCount * 0.44))
     : Infinity;
 
   for (let index = 0; index < config.comboCount; index += 1) {
@@ -414,6 +457,8 @@ function applyPageNewPatternMix(pool, config, index, pageNewUnlockLevel, pageNew
 }
 
 function getCurrentPageNewUnlockLevel(level) {
+  if (level >= OCTUPLET_UNLOCK_LEVEL) return OCTUPLET_UNLOCK_LEVEL;
+  if (level >= SEPTUPLET_UNLOCK_LEVEL) return SEPTUPLET_UNLOCK_LEVEL;
   if (level >= MASTER_UNLOCK_LEVEL) return MASTER_UNLOCK_LEVEL;
   if (level >= EXPERT_UNLOCK_LEVEL) return EXPERT_UNLOCK_LEVEL;
   if (level >= CHALLENGE_UNLOCK_LEVEL) return CHALLENGE_UNLOCK_LEVEL;

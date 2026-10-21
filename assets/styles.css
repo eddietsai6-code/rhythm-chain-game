@@ -165,7 +165,7 @@ h1 {
 }
 
 .page-switch[data-active-index="2"] .page-switch-lever {
-  transform: translateX(36px) rotate(48deg);
+  transform: translateX(72px) rotate(48deg);
 }
 
 .page-switch-button {
@@ -588,6 +588,14 @@ h1 {
   overflow: visible;
 }
 
+.expert-rhythm-glyph.septuplet {
+  width: 2.36em;
+}
+
+.expert-rhythm-glyph.octuplet {
+  width: 2.67em;
+}
+
 .rhythm-card.dense-rhythm .note-symbol {
   font-size: 34px;
 }
@@ -708,6 +716,14 @@ h1 {
 
 .practice-card[data-combo-tier="16"] .expert-rhythm-glyph {
   width: 1.64em;
+}
+
+.practice-card[data-combo-tier="16"] .expert-rhythm-glyph.septuplet {
+  width: 1.9em;
+}
+
+.practice-card[data-combo-tier="16"] .expert-rhythm-glyph.octuplet {
+  width: 2.15em;
 }
 
 .slot-picker .rhythm-card.dense-rhythm .note-symbol {

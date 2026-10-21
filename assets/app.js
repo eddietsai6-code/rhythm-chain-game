@@ -229,7 +229,7 @@ function renderPageSwitch() {
       const button = document.createElement("button");
       button.className = "page-switch-button";
       button.type = "button";
-      const pageSwitchSlotIndex = LEVEL_PAGES.length === 2 && index === 1 ? PAGE_SWITCH_SLOT_COUNT - 1 : index;
+      const pageSwitchSlotIndex = index;
       button.style.setProperty("--page-switch-left", `${(pageSwitchSlotIndex * 100) / PAGE_SWITCH_SLOT_COUNT}%`);
       button.setAttribute("aria-label", `${page.name} ${page.startLevel}-${page.endLevel}`);
       button.disabled = page.locked || page.startLevel > LEVEL_COUNT;
@@ -622,7 +622,9 @@ function appendSymbolNodes(symbol, pattern) {
 
   if (
     pattern.glyph === "quintuplet" ||
-    pattern.glyph === "sextuplet"
+    pattern.glyph === "sextuplet" ||
+    pattern.glyph === "septuplet" ||
+    pattern.glyph === "octuplet"
   ) {
     symbol.append(createExpertRhythmGlyph(pattern.glyph));
     return;
@@ -1108,19 +1110,20 @@ function createExpertRhythmGlyph(glyph) {
   const svg = document.createElementNS(svgNamespace, "svg");
   svg.classList.add("expert-rhythm-glyph");
   svg.classList.add(glyph);
-  svg.setAttribute("viewBox", "0 0 132 64");
   svg.setAttribute("aria-hidden", "true");
   svg.setAttribute("focusable", "false");
 
   const count = getExpertTupletCount(glyph);
   const startX = 18;
-  const endX = 118;
-  const spacing = (endX - startX) / (count - 1);
+  const spacing = count > 6 ? 20 : 100 / (count - 1);
+  const endX = startX + spacing * (count - 1);
+  const bracketEndX = endX + 5;
+  svg.setAttribute("viewBox", `0 0 ${endX + 14} 64`);
   const stemTop = 24;
   const beamTop = 20;
   const headY = 52;
 
-  svg.append(createTupletBracket(count, 9, 123));
+  svg.append(createTupletBracket(count, 9, bracketEndX));
   svg.append(createSvgElement("path", { d: `M${startX + 8} ${beamTop} L${endX + 8} ${beamTop} L${endX + 8} ${beamTop + 7} L${startX + 8} ${beamTop + 7} Z`, fill: "currentColor" }));
 
   for (let index = 0; index < count; index += 1) {
@@ -1145,7 +1148,12 @@ function createExpertRhythmGlyph(glyph) {
 }
 
 function getExpertTupletCount(glyph) {
-  return glyph === "sextuplet" ? 6 : 5;
+  return {
+    quintuplet: 5,
+    sextuplet: 6,
+    septuplet: 7,
+    octuplet: 8,
+  }[glyph] || 5;
 }
 
 function createTupletBracket(number, startX, endX) {
